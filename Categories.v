@@ -1,0 +1,60 @@
+Require Export Imports.
+
+Class Category: Type :=
+ mk_Category 
+ {
+     obj       : Type;
+     arrow     : obj -> obj -> Type;
+     identity  : forall a, arrow a a;
+     comp      : forall {a b c}, (arrow c b) -> (arrow b a) -> (arrow c a);
+     compose_respects x y z : Proper (eq ==> eq ==> eq) (@comp x y z); 
+     assoc     : forall {a b c d} (f : arrow b a) (g : arrow c b) (h : arrow d c), 
+                              comp h (comp g f) = comp (comp h g) f;
+     identity_f: forall {a b} (f: arrow b a), comp (@identity b) f = f;
+     f_identity: forall {a b} (f: arrow b a), comp f (@identity a) = f 
+  }.
+
+
+Notation " g 'o' f " := (@comp _ _ _ _ g f) (at level 40, left associativity).
+
+Notation CoqCat U :=
+{|
+  obj := U;
+  arrow := (fun A B => B -> A);
+  identity := (fun _ => id);
+  comp :=   (fun A B C (g: B -> C) (f: A -> B) a => g (f a))
+|}.
+
+Program Definition CoqCatT: Category := CoqCat Type.
+Program Definition CoqCatS: Category := CoqCat Set.
+
+Definition Product_Category (C D: Category) : Category.
+Proof.
+  refine (@mk_Category 
+           (@obj C * @obj D)%type
+           (fun a b => (@arrow C (fst a) (fst b) * @arrow D (snd a) (snd b))%type)
+           (fun a => (@identity C (fst a), @identity D (snd a)))
+           (fun a b c g f => (fst g o fst f, snd g o snd f))
+           _ _ _ _ 
+         ).
+  - setoid_rewrite <- assoc. reflexivity. 
+  - intros. simpl. rewrite !identity_f. destruct f. now simpl.
+  - intros. simpl. rewrite !f_identity. destruct f. now simpl.
+Defined.
+
+Definition Dual_Category (C: Category) : Category.
+Proof. 
+  refine (@mk_Category 
+           (@obj C)%type
+           (fun a b => (@arrow C b a %type))
+           (fun a => (@identity C a))
+           (fun a b c f1 f2 => f2 o f1)
+           _ _ _ _ 
+         ).
+ - intros. now rewrite <- assoc.
+ - intros. now rewrite f_identity.
+ - intros. now rewrite identity_f.
+Defined.
+
+Notation "C × D ":= (@Product_Category C D) (at level 40, left associativity).
+Notation "C ^op" := (@Dual_Category C) (at level 40, left associativity).
