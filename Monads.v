@@ -1,10 +1,12 @@
 Require Export NaturalTransformation.
 
-Arguments fmap {_} {_} _ _ _ _.
+Arguments fmap {_} {_} _ {_} {_} _.
 Arguments fobj {_} {_} _ _.
 Arguments Compose_Functors {_} {_} {_} _ _.
 Arguments NaturalTransformation {_} {_} _ _.
 Arguments trans {_} {_} {_} {_} _ _.
+
+Check fmap.
 
 Class Monad (C: Category) 
             (T: Functor C C): Type :=
@@ -14,13 +16,13 @@ Class Monad (C: Category)
     eta : NaturalTransformation Id T;
     mu  : NaturalTransformation (Compose_Functors T T) T;
     comm_diagram1   : forall (a: @obj C), 
-                        (trans mu a) o (fmap T (fobj T (fobj T a)) (fobj T a) ((trans mu a))) = 
+                        (trans mu a) o (fmap T (trans mu a)) = 
                         (trans mu a) o (trans mu (fobj T a));
     comm_diagram2   : forall (a: @obj C), 
-                        (trans mu a) o (fmap T (id a) (fobj T a) (trans eta a)) = 
+                        (trans mu a) o (fmap T (trans eta a)) = 
                         (trans mu a) o (trans eta (fobj T a));
     comm_diagram2_b1: forall (a: @obj C), 
-                        (trans mu a) o (fmap T (id a) (fobj T a) (trans eta a)) = 
+                        (trans mu a) o (fmap T (trans eta a)) = 
                         (identity (fobj T a));
     comm_diagram2_b2: forall (a: @obj C), (trans mu a) o (trans eta (fobj T a)) =
                         (identity (fobj T a))
@@ -35,16 +37,16 @@ Class coMonad (C: Category)
     eps    : NaturalTransformation D Id;
     delta  : NaturalTransformation D (Compose_Functors D D);
     ccomm_diagram1   : forall (a: @obj C),
-                       (fmap D  (fobj D a) (fobj D (fobj D a)) (trans delta a)) o (trans delta a) = 
+                       (fmap D (trans delta a)) o (trans delta a) = 
                        (trans delta (fobj D a)) o (trans delta a);
     ccomm_diagram2   : forall (a: @obj C),
-                       (fmap D (fobj D a) (id a) (trans eps a)) o (trans delta a) =
+                       (fmap D (trans eps a)) o (trans delta a) =
                        (trans eps (fobj D a)) o (trans delta a);
     ccomm_diagram2_b1: forall (a: @obj C),
                        (trans eps (fobj D a)) o (trans delta a) =
                        (identity (fobj D a));
     ccomm_diagram2_b2: forall (a: @obj C),
-                       (fmap D (fobj D a) (id a) (trans eps a)) o (trans delta a) =
+                       (fmap D (trans eps a)) o (trans delta a) =
                        (identity (fobj D a))
   }.
 Check coMonad.
@@ -69,7 +71,7 @@ Proof. destruct M. destruct eta0, mu0. simpl in *.
        - intros a b. exact (@arrow C (fobj T a) b).
        - intros.  exact ((@trans a)).
        - intros a b c g f. simpl in *.
-         exact ((@trans0 c) o (fmap T _ _  g) o f).
+         exact ((@trans0 c) o (fmap T g) o f).
        - repeat intro. now subst.
        - intros. simpl in *. destruct T. simpl in *.
          unfold Id, id in *. simpl in *.
@@ -103,7 +105,7 @@ Proof. destruct cM. destruct eps0, delta0. simpl in *.
        - intros a b. exact (@arrow C (id a) (fobj D b)).
        - intros. unfold id in *. exact ((@trans a)).
        - intros a b c g f. simpl in *.
-         exact (g o (fmap D _ _  f) o (trans0 a)).
+         exact (g o (fmap D  f) o (trans0 a)).
        - repeat intro. rewrite H, H0 in *. easy.
        - intros. simpl in *. destruct D. simpl in *.
          unfold Id, id in *. simpl in *.
@@ -130,7 +132,7 @@ Class TAlgebra (C: Category)
      alg_obj: @obj C;
      alg_map: arrow alg_obj (fobj T alg_obj);
      alg_id : alg_map o (trans eta alg_obj) = (@identity C alg_obj);
-     alg_act: alg_map o (fmap T (fobj T alg_obj) alg_obj (alg_map)) = alg_map o (trans mu alg_obj)
+     alg_act: alg_map o (fmap T (alg_map)) = alg_map o (trans mu alg_obj)
   }.
 Check TAlgebra.
 
@@ -157,7 +159,7 @@ Class TAlgebraMap (C      : Category)
                   (TA1 TA2: TAlgebra C T M) :=
   {
      tf  : @arrow C (@alg_obj C T M TA1) (@alg_obj C T M TA2);
-     malg: (@alg_map C T M TA1) o fmap T _ _  tf = tf o (@alg_map C T M TA2)
+     malg: (@alg_map C T M TA1) o fmap T tf = tf o (@alg_map C T M TA2)
   }.
 Check TAlgebraMap.
 
@@ -247,7 +249,7 @@ Definition RA {C D: Category}
 Proof. destruct M, mu0.
        unshelve econstructor; simpl.
        - exact (fobj T).
-       - intros a b f. exact (trans b o fmap T _ _ f).
+       - intros a b f. exact (trans b o fmap T f).
        - repeat intro. subst. easy.
        - intros. clear KC.
          specialize (comm_diagram2_b3 a). easy.
@@ -326,7 +328,7 @@ Proof. destruct cM, eps0.
        unshelve econstructor.
        - simpl. exact (fobj cT).
        - intros. destruct delta0. simpl in *. unfold id in *.
-         exact ((Functor.fmap cT _ _ f) o trans0 a).
+         exact ((Functor.fmap cT f) o trans0 a).
        - repeat intro. subst. easy.
        - intros. destruct delta0. unfold id in *. simpl in *.
          now rewrite ccomm_diagram2_b4.
