@@ -225,9 +225,9 @@ Definition LA {C D: Category}
               (M  : Monad C T)
               (KC := (Kleisli_Category C T M)): Functor C KC.
 Proof. destruct M, T, eta0.
-       unshelve econstructor.
-       - simpl. exact id.
-       - intros. unfold id. simpl. exact (trans b o f).
+       unshelve econstructor; simpl.
+       - exact id.
+       - intros a b f. exact (trans b o f).
        - repeat intro. subst. easy.
        - intros. simpl in *. rewrite f_identity. easy.
        - intros. simpl in *. destruct mu0. unfold id in *. simpl in *.
@@ -244,16 +244,14 @@ Definition RA {C D: Category}
               (T  := Compose_Functors F G)
               (M  : Monad C T)
               (KC := (Kleisli_Category C T M)): Functor KC C.
-Proof. destruct M, eta0.
-       unshelve econstructor.
-       - simpl. exact (fobj T).
-       - intros. simpl in *.
-         destruct mu0. simpl in *. exact (trans0 b o fmap T _ _ f).
+Proof. destruct M, mu0.
+       unshelve econstructor; simpl.
+       - exact (fobj T).
+       - intros a b f. exact (trans b o fmap T _ _ f).
        - repeat intro. subst. easy.
-       - intros. simpl in *. destruct mu0. simpl in *.
-         clear KC.
+       - intros. clear KC.
          specialize (comm_diagram2_b3 a). easy.
-       - intros. simpl. destruct mu0. simpl in *. unfold id in *.
+       - intros. unfold id in *.
          destruct F, G. simpl in *.
          rewrite preserve_comp, preserve_comp0.
          repeat rewrite assoc.
@@ -262,7 +260,7 @@ Proof. destruct M, eta0.
          repeat rewrite assoc.
          rewrite comm_diagram3.
          repeat rewrite <- assoc.
-         now rewrite comm_diag0.
+         now rewrite comm_diag.
 Defined.
 Check RA.
 

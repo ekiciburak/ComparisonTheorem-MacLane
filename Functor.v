@@ -66,6 +66,7 @@ Defined.
 Notation " C → D " := (Functor C D) (at level 40, left associativity).
 
 
+
 Definition BiHomFunctorC {C D: Category} (F: D → C) (G: C → D): (D^op) × C → CoqCatT.
 Proof. unshelve econstructor.
        - intros. cbn in *. destruct X as (x, y).
