@@ -95,10 +95,10 @@ Proof. unshelve econstructor.
          now rewrite H, ob4.
 Defined.
 
-Class HomAdjunction {C D: Category} (F: Functor D C) (G: Functor C D): Type :=
+Class HomAdjunction {C D: Category} (F: Functor C D) (G: Functor D C): Type :=
   mk_Homadj
   {
-     ob: @Isomorphism (FunctorCategory (D^op × C) CoqCatT) (BiHomFunctorC F G) (BiHomFunctorD F G)
+     ob: @Isomorphism (FunctorCategory (C^op × D) CoqCatT) (BiHomFunctorC F G) (BiHomFunctorD F G)
   }.
 Check HomAdjunction.
 
