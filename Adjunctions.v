@@ -114,30 +114,6 @@ Proof. intro A.
               cbn in *.
               intros. destruct a as (a, b).
               unfold id in *.
-              clear comm_diag ob3 ob4.
-              specialize (trans a).
-              exact ((fmap0 _ _ X) o trans).
-           ++ intros.  cbn in *.
-              destruct A, F, U, unit0, counit0.
-              cbn in *.
-              intros.
-              destruct a as (a0, a1).
-              destruct b as (b0, b1).
-              destruct f as (f, g).
-              extensionality a. cbn in *.
-              rewrite preserve_comp0.
-              specialize (@comm_diag b0 a0 f).
-              repeat rewrite <- assoc.
-              rewrite assoc.
-              rewrite preserve_comp0.
-              apply lcancel. easy.
-         + cbn in *.
-           unshelve econstructor.
-           ++ intros. cbn in *.
-              destruct A, F, U, unit0, counit0.
-              cbn in *.
-              destruct a as (a, b).
-              intros.
               clear comm_diag0 ob3 ob4.
               specialize (trans0 b).
               exact (trans0 o (fmap _ _ X)).
@@ -158,18 +134,29 @@ Proof. intro A.
               apply rcancel. apply rcancel.
               specialize (@comm_diag0 a1 b1 g). easy.
          + cbn in *.
-           apply Nt_split. cbn in *.
-           destruct A, F, U, unit0, counit0.
-           cbn in *.
-           extensionality a.
-           extensionality b.
-           destruct a as (a0, a1).
-           cbn in *. rewrite preserve_id0, f_identity, identity_f.
-           rewrite preserve_comp0. unfold id in *.
-           specialize (@comm_diag _ _ b).
-           rewrite <- assoc. rewrite comm_diag.
-           specialize (ob4 a1). rewrite assoc. rewrite ob4.
-           now rewrite identity_f.
+           unshelve econstructor.
+           ++ intros. cbn in *.
+              destruct A, F, U, unit0, counit0.
+              cbn in *.
+              destruct a as (a, b).
+              intros.
+              clear comm_diag ob3 ob4.
+              specialize (trans a).
+              exact ((fmap0 _ _ X) o trans).
+           ++ intros.  cbn in *.
+              destruct A, F, U, unit0, counit0.
+              cbn in *.
+              intros.
+              destruct a as (a0, a1).
+              destruct b as (b0, b1).
+              destruct f as (f, g).
+              extensionality a. cbn in *.
+              rewrite preserve_comp0.
+              specialize (@comm_diag b0 a0 f).
+              repeat rewrite <- assoc.
+              rewrite assoc.
+              rewrite preserve_comp0.
+              apply lcancel. easy.
          + cbn in *.
            apply Nt_split. cbn in *.
            destruct A, F, U, unit0, counit0.
@@ -183,6 +170,19 @@ Proof. intro A.
            rewrite assoc. rewrite <- comm_diag0.
            specialize (ob3 a0). rewrite <- assoc. rewrite ob3.
            now rewrite f_identity.
+         + cbn in *.
+           apply Nt_split. cbn in *.
+           destruct A, F, U, unit0, counit0.
+           cbn in *.
+           extensionality a.
+           extensionality b.
+           destruct a as (a0, a1).
+           cbn in *. rewrite preserve_id0, f_identity, identity_f.
+           rewrite preserve_comp0. unfold id in *.
+           specialize (@comm_diag _ _ b).
+           rewrite <- assoc. rewrite comm_diag.
+           specialize (ob4 a1). rewrite assoc. rewrite ob4.
+           now rewrite identity_f.
 Defined.
 
 (*

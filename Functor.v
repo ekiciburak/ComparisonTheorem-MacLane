@@ -66,21 +66,20 @@ Defined.
 Notation " C → D " := (Functor C D) (at level 40, left associativity).
 
 
-
-Definition BiHomFunctorC {C D: Category} (F: D → C) (G: C → D): (D^op) × C → CoqCatT.
+Definition BiHomFunctorC {C D: Category} (F: C → D) (G: D → C): C^op × D → CoqCatT.
 Proof. unshelve econstructor.
        - intros. cbn in *. destruct X as (x, y).
-         exact (@arrow C y (fobj F x)).
+         exact (@arrow C (fobj G y) x).
        - intros. cbn in *.
          destruct a as (a1, a2).
          destruct b as (b1, b2).
          destruct f as (f1, f2).
          cbn in *. intro g.
-         exact (f2 o g o (fmap F _ _ f1)).
+         exact ((fmap G _ _ f2) o g o f1).
        - repeat intro. now subst.
        - intros. destruct a as (a1, a2).
          cbn. extensionality f.
-         now rewrite identity_f, preserve_id, f_identity.
+         now rewrite f_identity, preserve_id, identity_f.
        - intros.
          destruct a as (a1, a2).
          destruct b as (b1, b2).
@@ -93,20 +92,20 @@ Proof. unshelve econstructor.
          now repeat rewrite assoc.
 Defined.
 
-Definition BiHomFunctorD {C D: Category} (F: D → C) (G: C → D): D^op × C → CoqCatT.
+Definition BiHomFunctorD {C D: Category} (F: C → D) (G: D → C): (C^op) × D → CoqCatT.
 Proof. unshelve econstructor.
        - intros. cbn in *. destruct X as (x, y).
-         exact (@arrow D (fobj G y) x).
+         exact (@arrow D y (fobj F x)).
        - intros. cbn in *.
          destruct a as (a1, a2).
          destruct b as (b1, b2).
          destruct f as (f1, f2).
          cbn in *. intro g.
-         exact ((fmap G _ _ f2) o g o f1).
+         exact (f2 o g o (fmap F _ _ f1)).
        - repeat intro. now subst.
        - intros. destruct a as (a1, a2).
          cbn. extensionality f.
-         now rewrite f_identity, preserve_id, identity_f.
+         now rewrite identity_f, preserve_id, f_identity.
        - intros.
          destruct a as (a1, a2).
          destruct b as (b1, b2).

@@ -14,8 +14,20 @@ Class Category: Type :=
      f_identity: forall {a b} (f: arrow b a), comp f (@identity a) = f 
   }.
 
-
 Notation " g 'o' f " := (@comp _ _ _ _ g f) (at level 40, left associativity).
+
+Class SubCategory (C: Category): Type :=
+  mk_SubCategory
+  {
+     s_obj     : @obj C -> Type;
+     s_arrow   : forall (a b: @obj C), s_obj a -> s_obj b -> @arrow C a b -> Type;
+     s_identity: forall (a: @obj C) (sa: s_obj a), s_arrow a a sa sa (@identity C a);
+     s_comp    : forall (a b c: @obj C) (sa: s_obj a) (sb: s_obj b) (sc: s_obj c)
+                        (f: arrow b c) (g: arrow a b), 
+                         s_arrow a b sa sb g -> s_arrow b c sb sc f ->
+                         s_arrow a c sa sc (g o f) 
+  }.
+
 
 Notation CoqCat U :=
 {|
