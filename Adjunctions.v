@@ -124,7 +124,7 @@ Class HomAdjunction {C D: Category} (F: Functor C D) (G: Functor D C): Type :=
   }.
 Check HomAdjunction.
 
-Theorem adjEq1 (C D: Category) (F: Functor C D) (U: Functor D C): 
+Lemma adjEq1 (C D: Category) (F: Functor C D) (U: Functor D C): 
 Adjunction F U -> HomAdjunction F U.
 Proof. intro A.
        unshelve econstructor.
@@ -238,7 +238,7 @@ Proof. intro A.
            now rewrite identity_f.
 Defined.
 
-Theorem adjEq2 (C D: Category) (F: Functor C D) (U: Functor D C): 
+Lemma adjEq2 (C D: Category) (F: Functor C D) (U: Functor D C): 
 HomAdjunction F U -> Adjunction F U.
 Proof. intro A.
        unshelve econstructor.
@@ -480,6 +480,19 @@ Proof. intros C D F U A.
 Defined.
 Check adj_mon.
 
+
+(** every hom-adjunction gives raise to a monad *)
+Theorem homadj_mon: forall
+                 {C D: Category}
+                 (F  : @Functor C D)
+                 (U  : @Functor D C),
+                 HomAdjunction F U -> Monad C (Compose_Functors F U).
+Proof. intros C D F U A. apply adjEq2 in A.
+       now apply adj_mon.
+Defined.
+Check homadj_mon.
+
+
 (** every adjunction gives raise to a comonad *)
 Theorem adj_comon: forall
                  {C D: Category}
@@ -514,6 +527,16 @@ Proof. intros C D F U A.
 Defined.
 Check adj_comon.
 
+(** every hom-adjunction gives raise to a comonad *)
+Theorem homadj_comon: forall
+                 {C D: Category}
+                 (F  : @Functor C D)
+                 (U  : @Functor D C),
+                 HomAdjunction F U -> coMonad D (Compose_Functors U F).
+Proof. intros C D F U A. apply adjEq2 in A.
+       now apply adj_comon.
+Defined.
+Check homadj_comon.
 
 Theorem mon_kladj: forall
                    {C D: Category}
@@ -616,7 +639,7 @@ Theorem mon_klhomadj: forall
 Proof. intros.
        specialize (mon_kladj F G M); intros.
        apply adjEq1 in X. easy.
-Qed.
+Defined.
 
 Theorem comon_cokladj: forall
                    {C D: Category}
@@ -700,6 +723,18 @@ Proof. intros.
 Defined.
 Check comon_cokladj.
 
+Theorem comon_coklhomadj: forall
+                   {C D: Category}
+                   (F  : Functor D C)
+                   (G  : Functor C D)
+                   (D  := Compose_Functors G F)
+                   (cM : coMonad C D)
+                   (FD := cLA F G cM)
+                   (GD := cRA F G cM), HomAdjunction FD GD.
+Proof. intros. apply adjEq1. 
+       apply comon_cokladj.
+Defined.
+
 Theorem mon_emadj: forall
                    {C D: Category}
                    (F  : Functor C D)
@@ -741,6 +776,18 @@ Proof. intros.
          destruct a. now cbn in *.
 Qed.
 
+Theorem mon_emhomadj: forall
+                   {C D: Category}
+                   (F  : Functor C D)
+                   (G  : Functor D C)
+                   (T  := Compose_Functors F G)
+                   (M  : Monad C T)
+                   (FT := LAEM F G M)
+                   (GT := RAEM F G M), HomAdjunction FT GT.
+Proof. intros. apply adjEq1.
+       apply mon_emadj.
+Defined.
+
 Definition L: forall
                {C D   : Category}
                (F     : Functor C D)
@@ -774,20 +821,20 @@ Check L.
 (*
 Lemma uniqueL: forall
                  {C D: Category}
-                 (F: Functor D C)
-                 (G: Functor C D)
+                 (F: Functor C D)
+                 (G: Functor D C)
                  (A1: Adjunction F G),
-                 let cM := (adj_comon F G A1) in
                  let  M := (adj_mon   F G A1) in
-                 let CD := (coKleisli_Category C (Compose_Functors G F) cM) in
-                 let FD := (cLA F G cM) in
-                 let GD := (cRA F G cM) in
-                 let A2 := (comon_cokladj F G cM) in
+                 let CT := (Kleisli_Category C (Compose_Functors F G) M) in
+                 let FT := (LA F G M) in
+                 let GT := (RA F G M) in
+                 let A2 := (mon_kladj F G M) in
                  unique
-                    (fun L0 : CD → D =>
-                     Compose_Functors GD L0 = G /\ Compose_Functors L0 F = FD) 
+                    (fun L0 : CT → D =>
+                     Compose_Functors FT L0 = F /\ Compose_Functors L0 G = GT) 
                     (L F G A1).
 Proof. Admitted.
+
 *)
 
 (** Mac Lane's comparison theorem of 
@@ -863,8 +910,7 @@ Proof. intros C D F G A1 M CT FT GT A2.
        }
        rewrite H1.
        extensionality a. extensionality b.
-       extensionality f.
-       now rewrite preserve_comp0.
+       extensionality f. now rewrite preserve_comp0.
 Qed.
 Check ComparisonMacLane.
 

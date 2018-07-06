@@ -217,8 +217,6 @@ Proof. unshelve econstructor.
 Defined.
 Check EilenbergMooreCategory.
 
-(** A monad gives raise to a Kleisli Adjunction *)
-
 (** left adjoint functor that acts as F_T *)
 Definition LA {C D: Category}
               (F  : Functor C D)
