@@ -124,7 +124,7 @@ Class HomAdjunction {C D: Category} (F: Functor C D) (G: Functor D C): Type :=
   }.
 Check HomAdjunction.
 
-Theorem adjEq1 (C D: Category) (F: Functor D C) (U: Functor C D): 
+Theorem adjEq1 (C D: Category) (F: Functor C D) (U: Functor D C): 
 Adjunction F U -> HomAdjunction F U.
 Proof. intro A.
        unshelve econstructor.
@@ -238,7 +238,6 @@ Proof. intro A.
            now rewrite identity_f.
 Defined.
 
-(*
 Theorem adjEq2 (C D: Category) (F: Functor C D) (U: Functor D C): 
 HomAdjunction F U -> Adjunction F U.
 Proof. intro A.
@@ -253,48 +252,157 @@ Proof. intro A.
          + cbn in *. intros.
            destruct A, ob0, to, from. cbn in *.
            clear iso_to_from iso_from_to.
-           specialize (comm_diag0 (a, (fobj F a))). cbn in *.
-           specialize (comm_diag0 (a, (fobj F b))). cbn in *.
-           specialize (comm_diag0 ((identity a), (fmap F f))).
+           pose proof trans_sym0 as trans_sym00.
+           specialize (trans_sym0 (a, (fobj F a))). cbn in *.
+           specialize (trans_sym0 (a, (fobj F b))). cbn in *.
+           specialize (trans_sym0 ((identity a), (fmap F f))).
            cbn in *.
-           rewrite <- assoc. trans_sym0.
-           cbn in *. admit.
-        +
+           pose proof (fun x => eq_ind_r (fun f => f x = _ x ) eq_refl trans_sym0) as H';
+           cbv beta in H'.
+           specialize (H'  (identity (fobj F a))).
+           rewrite !preserve_id, !f_identity in H'.
+           
+           assert (trans0 (a, fobj F b) (fmap F f) = trans0 (b, fobj F b) (identity (fobj F b)) o f).
+           {           
+            specialize (trans_sym00 (b, (fobj F b))). cbn in *.
+            specialize (trans_sym00 (a, (fobj F b))). cbn in *.
+            specialize (trans_sym00 (f, (identity (fobj F b))) ).
+            cbn in *. 
+           pose proof (fun x => eq_ind_r (fun f => f x = _ x ) eq_refl trans_sym00) as H'';
+           cbv beta in H''.
+           specialize (H''  (identity (fobj F b))).
+           rewrite !preserve_id, !f_identity, !identity_f in H''. easy. } 
+           rewrite H in H'. easy.
+        + cbn in *. intros.
+           destruct A, ob0, to, from. cbn in *.
+           clear iso_to_from iso_from_to.
+           pose proof trans_sym0 as trans_sym00.
+           specialize (trans_sym0 (a, (fobj F a))). cbn in *.
+           specialize (trans_sym0 (a, (fobj F b))). cbn in *.
+           specialize (trans_sym0 ((identity a), (fmap F f))).
+           cbn in *.
+           pose proof (fun x => eq_ind_r (fun f => f x = _ x ) eq_refl trans_sym0) as H';
+           cbv beta in H'.
+           specialize (H'  (identity (fobj F a))).
+           rewrite !preserve_id, !f_identity in H'.
+
+           assert (trans0 (a, fobj F b) (fmap F f) = trans0 (b, fobj F b) (identity (fobj F b)) o f).
+           {
+            specialize (trans_sym00 (b, (fobj F b))). cbn in *.
+            specialize (trans_sym00 (a, (fobj F b))). cbn in *.
+            specialize (trans_sym00 (f, (identity (fobj F b))) ).
+            cbn in *. 
+           pose proof (fun x => eq_ind_r (fun f => f x = _ x ) eq_refl trans_sym00) as H'';
+           cbv beta in H''.
+           specialize (H''  (identity (fobj F b))).
+           rewrite !preserve_id, !f_identity, !identity_f in H''. easy. } 
+           rewrite H in H'. easy.
        - unshelve econstructor.
          + intros. cbn in *.
            destruct A, ob0, to, from. cbn in *.
-           clear comm_diag iso_to_from comm_diag0 iso_from_to.
+           clear comm_diag iso_to_from comm_diag0 iso_from_to trans_sym trans_sym0.
            specialize (trans ((fobj U a), a)).
            cbn in *. apply trans.
            exact (identity (fobj U a)).
          + cbn in *. intros.
            destruct A, ob0, to, from. cbn in *.
            clear iso_to_from iso_from_to.
-           specialize (comm_diag ((fobj U a), a)). cbn in *.
-           specialize (comm_diag ((fobj U a), b)). cbn in *.
-           specialize (comm_diag ((identity (fobj U a)), f)).
-           
-           cbn in *. admit.
+           pose proof trans_sym as trans_symm.
+           specialize (trans_sym ((fobj U a), a)). cbn in *.
+           specialize (trans_sym ((fobj U a), b)). cbn in *.
+           specialize (trans_sym ((identity (fobj U a)), f)).
+           cbn in *.
+           pose proof (fun x => eq_ind_r (fun f => f x = _ x ) eq_refl trans_sym) as H';
+           cbv beta in H'.
+           specialize (H'  (identity (fobj U a))).
+           rewrite !preserve_id, !f_identity in H'.
+
+           assert (trans (fobj U a, b) (fmap U f) = trans (fobj U b, b) (identity (fobj U b)) o fmap F (fmap U f)).
+           {
+            specialize (trans_symm ((fobj U b), b)). cbn in *.
+            specialize (trans_symm ((fobj U a), b)). cbn in *.
+            specialize (trans_symm ((fmap U f), (identity b))).
+            cbn in *. 
+            pose proof (fun x => eq_ind_r (fun f => f x = _ x ) eq_refl trans_symm) as H'';
+            cbv beta in H''.
+            specialize (H''  (identity (fobj U b))).
+            rewrite !preserve_id, !f_identity, !identity_f in H''. easy. } 
+           rewrite H in H'. easy.
+         + cbn in *. intros.
+           destruct A, ob0, to, from. cbn in *.
+           clear iso_to_from iso_from_to.
+           pose proof trans_sym as trans_symm.
+           specialize (trans_sym ((fobj U a), a)). cbn in *.
+           specialize (trans_sym ((fobj U a), b)). cbn in *.
+           specialize (trans_sym ((identity (fobj U a)), f)).
+           cbn in *.
+           pose proof (fun x => eq_ind_r (fun f => f x = _ x ) eq_refl trans_sym) as H';
+           cbv beta in H'.
+           specialize (H'  (identity (fobj U a))).
+           rewrite !preserve_id, !f_identity in H'.
+
+           assert (trans (fobj U a, b) (fmap U f) = trans (fobj U b, b) (identity (fobj U b)) o fmap F (fmap U f)).
+           {
+            specialize (trans_symm ((fobj U b), b)). cbn in *.
+            specialize (trans_symm ((fobj U a), b)). cbn in *.
+            specialize (trans_symm ((fmap U f), (identity b))).
+            cbn in *. 
+            pose proof (fun x => eq_ind_r (fun f => f x = _ x ) eq_refl trans_symm) as H'';
+            cbv beta in H''.
+            specialize (H''  (identity (fobj U b))).
+            rewrite !preserve_id, !f_identity, !identity_f in H''. easy. } 
+           rewrite H in H'. easy.
 
        - cbn in *. intros.
          destruct A, ob0, to, from. cbn in *.
-         apply Nt_split in iso_from_to. cbn in *.
-         unfold Compose_NaturalTransformations, IdNt in iso_from_to.
+         pose proof trans_sym as trans_symm.
 
-         cbn in *.
-         clear iso_to_from iso_from_to.
-         specialize (comm_diag ((fobj U (fobj F a)), (fobj F a))). cbn in *.
-         specialize (comm_diag ((fobj U (fobj F a)), (fobj F a))). cbn in *.
-         specialize (comm_diag ((identity (fobj U (fobj F a))), (identity (fobj F a)))).
- 
-         cbn in *.
-         specialize (comm_diag0 (a, (fobj F a))). cbn in *.
-         specialize (comm_diag0 (a, (fobj F a))). cbn in *.
-         specialize (comm_diag0 ((identity a), (identity (fobj F a)))).
- 
-         cbn in *.
+         specialize (trans_symm ((fobj U (fobj F a)), (fobj F a))). cbn in *.
+         specialize (trans_symm (a, (fobj F a))). cbn in *.
+         specialize (trans_symm (trans0 (a, fobj F a) (identity (fobj F a)), (identity (fobj F a)))).
+         cbn in *. 
+         pose proof (fun x => eq_ind_r (fun f => f x = _ x ) eq_refl trans_symm) as H'';
+         cbv beta in H''.
+         specialize (H''  (identity (fobj U (fobj F a)))).
+         rewrite !preserve_id, !f_identity, !identity_f in H''.
+         assert (trans (a, fobj F a) (trans0 (a, fobj F a) (identity (fobj F a))) = identity (fobj F a)).
+         { 
+           apply Nt_split in iso_to_from. cbn in *.
+           pose proof (fun x => eq_ind_r (fun f => f x = _ x ) eq_refl iso_to_from) as H';
+           cbv beta in H'.
+           specialize (H' (a, (fobj F a))). cbn in H'.
+           pose proof (fun x => eq_ind_r (fun f => f x = _ x ) eq_refl H') as H0;
+           cbv beta in H0.
+           specialize (H0 (identity (fobj F a))).
+           rewrite !identity_f, preserve_id in H0. easy.
+          }
+         rewrite H in H''. easy.
 
-*)
+       - cbn in *. intros.
+         destruct A, ob0, to, from. cbn in *.
+         pose proof trans_sym0 as trans_symm.
+
+         specialize (trans_symm ((fobj U a), (fobj F (fobj U a)))). cbn in *.
+         specialize (trans_symm ((fobj U a), a)). cbn in *.
+         specialize (trans_symm ((identity (fobj U a)), (trans (fobj U a, a) (identity (fobj U a))))).
+         cbn in *.
+         pose proof (fun x => eq_ind_r (fun f => f x = _ x ) eq_refl trans_symm) as H'';
+         cbv beta in H''.
+         specialize (H''  (identity (fobj F (fobj U a)))).
+         rewrite  !preserve_id, !f_identity in H''.
+         assert (trans0 (fobj U a, a) (trans (fobj U a, a) (identity (fobj U a))) = identity (fobj U a)).
+         { 
+           apply Nt_split in iso_from_to. cbn in *.
+           pose proof (fun x => eq_ind_r (fun f => f x = _ x ) eq_refl  iso_from_to) as H';
+           cbv beta in H'.
+           specialize (H' ((fobj U a), a)). cbn in H'.
+           pose proof (fun x => eq_ind_r (fun f => f x = _ x ) eq_refl H') as H0;
+           cbv beta in H0.
+           specialize (H0 (identity (fobj U a))).
+           rewrite !f_identity, preserve_id in H0. easy.
+          }
+         rewrite H in H''. easy.
+Qed.
 
 Definition T2toT: forall
                  {C D: Category}
@@ -793,6 +901,7 @@ Proof. intros C D F G A1 cM M CD FD GD A2. simpl in *.
 Defined.
 Check duL.
 
+(*
 Lemma uniqueduL: forall
                  {C D: Category}
                  (F: Functor D C)
