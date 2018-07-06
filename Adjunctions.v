@@ -59,11 +59,33 @@ Proof. unshelve econstructor.
            rewrite <- preserve_comp.
            apply rcancel.
            apply f_equal. easy.
+         + intros. cbn in *.
+           destruct A1, A2, unit0, counit0, unit1, counit1. cbn in *.
+           rewrite assoc.
+           rewrite <- preserve_comp.
+           specialize (comm_diag1 _ _ (fmap F f)).
+           rewrite <- assoc.
+           rewrite <- comm_diag.
+           rewrite assoc.
+           rewrite <- preserve_comp.
+           apply rcancel.
+           apply f_equal. easy.
        - unshelve econstructor.
          + intros. cbn in *.
            destruct A1, A2, counit0, counit1.
            cbn in *. unfold id in *.
            exact (trans0 a o (fmap F' (trans (fobj G' a)))).
+         + intros. cbn in *.
+           destruct A1, A2, unit0, counit0, unit1, counit1. cbn in *.
+           rewrite <- assoc.
+           rewrite <- preserve_comp.
+           rewrite assoc.
+           rewrite comm_diag2.
+           rewrite <- assoc.
+           rewrite <- preserve_comp.
+           apply lcancel.
+           apply f_equal.
+           now rewrite <- comm_diag0.
          + intros. cbn in *.
            destruct A1, A2, unit0, counit0, unit1, counit1. cbn in *.
            rewrite <- assoc.
@@ -114,9 +136,25 @@ Proof. intro A.
               cbn in *.
               intros. destruct a as (a, b).
               unfold id in *.
-              clear comm_diag0 ob3 ob4.
+              clear comm_diag0 trans_sym0 ob3 ob4.
               specialize (trans0 b).
               exact (trans0 o (fmap _ _ X)).
+           ++ intros.  cbn in *.
+              destruct A, F, U, unit0, counit0.
+              cbn in *.
+              intros.
+              destruct a as (a0, a1).
+              destruct b as (b0, b1).
+              destruct f as (f, g).
+              extensionality a. cbn in *.
+              rewrite preserve_comp.
+              specialize (@comm_diag b0 a0 f).
+              repeat rewrite <- assoc.
+              rewrite assoc.
+              rewrite preserve_comp.
+              repeat rewrite assoc.
+              apply rcancel. apply rcancel.
+              specialize (@comm_diag0 a1 b1 g). easy.
            ++ intros.  cbn in *.
               destruct A, F, U, unit0, counit0.
               cbn in *.
@@ -140,7 +178,7 @@ Proof. intro A.
               cbn in *.
               destruct a as (a, b).
               intros.
-              clear comm_diag ob3 ob4.
+              clear comm_diag trans_sym ob3 ob4.
               specialize (trans a).
               exact ((fmap0 _ _ X) o trans).
            ++ intros.  cbn in *.
@@ -157,6 +195,21 @@ Proof. intro A.
               rewrite assoc.
               rewrite preserve_comp0.
               apply lcancel. easy.
+           ++ intros.  cbn in *.
+              destruct A, F, U, unit0, counit0.
+              cbn in *.
+              intros.
+              destruct a as (a0, a1).
+              destruct b as (b0, b1).
+              destruct f as (f, g).
+              extensionality a. cbn in *.
+              rewrite preserve_comp0.
+              specialize (@comm_diag b0 a0 f).
+              repeat rewrite <- assoc.
+              rewrite !preserve_comp0.
+              rewrite <- assoc.
+              apply lcancel. apply lcancel.
+              now rewrite <- trans_sym. 
          + cbn in *.
            apply Nt_split. cbn in *.
            destruct A, F, U, unit0, counit0.
@@ -186,11 +239,62 @@ Proof. intro A.
 Defined.
 
 (*
-Theorem adjEq2 (C D: Category) (F: Functor D C) (U: Functor C D): 
+Theorem adjEq2 (C D: Category) (F: Functor C D) (U: Functor D C): 
 HomAdjunction F U -> Adjunction F U.
-Proof. Admitted.
-*)
+Proof. intro A.
+       unshelve econstructor.
+       - unshelve econstructor.
+         + intros. cbn in *.
+           destruct A, ob0, to, from. cbn in *.
+           clear comm_diag iso_to_from comm_diag0 iso_from_to trans_sym trans_sym0.
+           specialize (trans0 (a, (fobj F a))).
+           cbn in *. apply trans0.
+           exact (identity (fobj F a)).
+         + cbn in *. intros.
+           destruct A, ob0, to, from. cbn in *.
+           clear iso_to_from iso_from_to.
+           specialize (comm_diag0 (a, (fobj F a))). cbn in *.
+           specialize (comm_diag0 (a, (fobj F b))). cbn in *.
+           specialize (comm_diag0 ((identity a), (fmap F f))).
+           cbn in *.
+           rewrite <- assoc. trans_sym0.
+           cbn in *. admit.
+        +
+       - unshelve econstructor.
+         + intros. cbn in *.
+           destruct A, ob0, to, from. cbn in *.
+           clear comm_diag iso_to_from comm_diag0 iso_from_to.
+           specialize (trans ((fobj U a), a)).
+           cbn in *. apply trans.
+           exact (identity (fobj U a)).
+         + cbn in *. intros.
+           destruct A, ob0, to, from. cbn in *.
+           clear iso_to_from iso_from_to.
+           specialize (comm_diag ((fobj U a), a)). cbn in *.
+           specialize (comm_diag ((fobj U a), b)). cbn in *.
+           specialize (comm_diag ((identity (fobj U a)), f)).
+           
+           cbn in *. admit.
 
+       - cbn in *. intros.
+         destruct A, ob0, to, from. cbn in *.
+         apply Nt_split in iso_from_to. cbn in *.
+         unfold Compose_NaturalTransformations, IdNt in iso_from_to.
+
+         cbn in *.
+         clear iso_to_from iso_from_to.
+         specialize (comm_diag ((fobj U (fobj F a)), (fobj F a))). cbn in *.
+         specialize (comm_diag ((fobj U (fobj F a)), (fobj F a))). cbn in *.
+         specialize (comm_diag ((identity (fobj U (fobj F a))), (identity (fobj F a)))).
+ 
+         cbn in *.
+         specialize (comm_diag0 (a, (fobj F a))). cbn in *.
+         specialize (comm_diag0 (a, (fobj F a))). cbn in *.
+         specialize (comm_diag0 ((identity a), (identity (fobj F a)))).
+ 
+         cbn in *.
+
+*)
 
 Definition T2toT: forall
                  {C D: Category}
@@ -205,9 +309,11 @@ Proof. intros C D F U T T2 A.
                       C
                       T2
                       T
-                      (fun a => fmap0 _  _ (trans0 (fobj a))) _ ).
+                      (fun a => fmap0 _  _ (trans0 (fobj a))) _ _).
        intros. unfold T, T2, id in *. simpl in *.
        now rewrite <- !preserve_comp0, comm_diag0.
+       intros. unfold T, T2, id in *. simpl in *.
+       now rewrite <- !preserve_comp0, trans_sym0.
 Defined.
 
 Definition DtoD2: forall
@@ -223,7 +329,10 @@ Proof. intros C D F U cT cT2 A.
                       D
                       cT
                       cT2
-                      (fun a => fmap _  _(trans (fobj0 a))) _ ).
+                      (fun a => fmap _  _(trans (fobj0 a))) _ _ ).
+       intros. unfold cT, cT2, id in *. simpl in *.
+       rewrite <- !preserve_comp.
+       now rewrite comm_diag.
        intros. unfold cT, cT2, id in *. simpl in *.
        rewrite <- !preserve_comp.
        now rewrite comm_diag.
@@ -320,8 +429,33 @@ Proof. intros.
            rewrite assoc.
            rewrite comm_diagram2_b2.
            now rewrite identity_f.
+         + intros. simpl in *.
+           destruct M, FT, GT. destruct eta, mu. simpl in *.
+           unfold id in *.
+           rewrite <- assoc.
+           rewrite comm_diag.
+           rewrite assoc.
+           rewrite comm_diagram2_b2.
+           now rewrite identity_f.
        - unshelve econstructor.
          + intros. simpl. unfold id in *. apply identity.
+         + intros. simpl.
+           destruct M, FT, GT. simpl in *. destruct mu, eta.
+           simpl in *. unfold id in *.
+           rewrite f_identity.
+           repeat rewrite assoc.
+           symmetry.
+           assert (trans b o Functor.fmap G 
+           (Functor.fmap F f) =
+           (@identity C (Functor.fobj G (Functor.fobj F b))) o trans b o 
+           Functor.fmap G (Functor.fmap F f) ).
+           {
+              now rewrite identity_f.
+           }
+           rewrite H. apply rcancel. apply rcancel.
+           rewrite <- assoc.
+           rewrite comm_diag0, f_identity.
+           now rewrite comm_diagram2_b2.
          + intros. simpl.
            destruct M, FT, GT. simpl in *. destruct mu, eta.
            simpl in *. unfold id in *.
@@ -406,10 +540,34 @@ Proof. intros.
            setoid_rewrite <- assoc at 2.
            setoid_rewrite <- assoc at 1.
            setoid_rewrite H. now rewrite f_identity.
+         + intros. simpl.
+           destruct cM, FD, GD. simpl in *. destruct eps, delta.
+           simpl in *. unfold id in *.
+           rewrite identity_f.
+           symmetry.
+           assert ((trans (Functor.fobj F (Functor.fobj G a))) o 
+                    Functor.fmap F (Functor.fmap G (@identity C (Functor.fobj F 
+                   (Functor.fobj G a)))) o trans0 a =
+                   (@identity C (Functor.fobj F (Functor.fobj G a)))).
+           {
+              rewrite <- comm_diag. 
+              now rewrite identity_f, ccomm_diagram2_b1.
+           }
+           setoid_rewrite <- assoc at 2.
+           setoid_rewrite <- assoc at 1.
+           setoid_rewrite H. now rewrite f_identity.
        - unshelve econstructor.
          + intros. simpl. unfold id in *.
            destruct cM, eps, delta. simpl in *.  unfold id in *.
            apply trans.
+         + intros. simpl in *.
+           destruct cM, FD, GD, F, G. destruct eps, delta. simpl in *.
+           unfold id in *.
+           repeat rewrite assoc.
+           rewrite preserve_comp2, preserve_comp1. 
+           rewrite comm_diag.
+           repeat rewrite <- assoc.
+           now rewrite ccomm_diagram2_b2, f_identity.
          + intros. simpl in *.
            destruct cM, FD, GD, F, G. destruct eps, delta. simpl in *.
            unfold id in *.
@@ -450,6 +608,9 @@ Proof. intros.
          + intros. cbn in *.
            destruct M, eta. cbn in *.
            now rewrite comm_diag.
+         + intros. cbn in *.
+           destruct M, eta. cbn in *.
+           now rewrite comm_diag.
        - unshelve econstructor.
          + intros. cbn in *.
            unshelve econstructor.
@@ -457,6 +618,9 @@ Proof. intros.
               exact alg_map.
            ++ destruct a. cbn in *.
               now rewrite alg_act.
+         + intros. destruct a, b, f.
+           cbn in *. apply eqTAM. cbn.
+           now rewrite malg.
          + intros. destruct a, b, f.
            cbn in *. apply eqTAM. cbn.
            now rewrite malg.
@@ -629,7 +793,6 @@ Proof. intros C D F G A1 cM M CD FD GD A2. simpl in *.
 Defined.
 Check duL.
 
-(*
 Lemma uniqueduL: forall
                  {C D: Category}
                  (F: Functor D C)
