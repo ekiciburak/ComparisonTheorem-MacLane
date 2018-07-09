@@ -117,10 +117,11 @@ Proof. unshelve econstructor.
          now rewrite H, ob4.
 Defined.
 
+
 Class HomAdjunction {C D: Category} (F: Functor C D) (G: Functor D C): Type :=
   mk_Homadj
   {
-     ob: @Isomorphism (FunctorCategory (C^op × D) CoqCatT) (BiHomFunctorC F G) (BiHomFunctorD F G)
+     ob: @Isomorphism (FunctorCategory (C^op × D) CoqCatT) (BiHomFunctorC G) (BiHomFunctorD F)
   }.
 Check HomAdjunction.
 
@@ -833,7 +834,23 @@ Lemma uniqueL: forall
                     (fun L0 : CT → D =>
                      Compose_Functors FT L0 = F /\ Compose_Functors L0 G = GT) 
                     (L F G A1).
-Proof. Admitted.
+Proof. intros.
+       unfold unique. split. intros.
+       assert (Compose_Functors FT (L F G A1) = F /\ Compose_Functors (L F G A1) G = GT) by admit.
+       easy.
+       assert (Compose_Functors FT (L F G A1) = F /\ Compose_Functors (L F G A1) G = GT) by admit.
+       intros.
+       remember (BiHomFunctorD_LF_L FT (L F G A1)) as FTL.
+       remember (BiHomFunctorD_F_L  F  (L F G A1)) as FL.
+       assert (FTL = FL).
+       { 
+         assert (fobj FTL = fobj FL).
+         { rewrite HeqFTL, HeqFL. cbn. easy. }
+           specialize (F_split _ _ FTL FL H1); intros.
+           apply H2. cbn. extensionality a.
+           extensionality b. clear H2. destruct F, G, a, b.
+           cbn in *. admit.
+       }
 
 *)
 

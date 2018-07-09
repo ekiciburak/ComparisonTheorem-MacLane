@@ -66,7 +66,7 @@ Defined.
 Notation " C → D " := (Functor C D) (at level 40, left associativity).
 
 
-Definition BiHomFunctorC {C D: Category} (F: C → D) (G: D → C): C^op × D → CoqCatT.
+Definition BiHomFunctorC {C D: Category} (G: D → C): C^op × D → CoqCatT.
 Proof. unshelve econstructor.
        - intros. cbn in *. destruct X as (x, y).
          exact (@arrow C (fobj G y) x).
@@ -92,7 +92,7 @@ Proof. unshelve econstructor.
          now repeat rewrite assoc.
 Defined.
 
-Definition BiHomFunctorD {C D: Category} (F: C → D) (G: D → C): (C^op) × D → CoqCatT.
+Definition BiHomFunctorD {C D: Category} (F: C → D): (C^op) × D → CoqCatT.
 Proof. unshelve econstructor.
        - intros. cbn in *. destruct X as (x, y).
          exact (@arrow D y (fobj F x)).
@@ -118,3 +118,54 @@ Proof. unshelve econstructor.
          now repeat rewrite assoc.
 Defined.
 
+Definition BiHomFunctorD_LF_L {C D E: Category} (F: C → D) (L: D → E): (C^op) × D → CoqCatT.
+Proof. unshelve econstructor.
+       - intros. cbn in *. destruct X as (x, y).
+         exact (@arrow E (fobj L y) (fobj L (fobj F x))).
+       - intros. cbn in *.
+         destruct a as (a1, a2).
+         destruct b as (b1, b2).
+         destruct f as (f1, f2).
+         cbn in *. intro g.
+         exact ((fmap L _ _ f2) o g o (fmap L _ _ (fmap F _ _ f1))).
+       - repeat intro. now subst.
+       - intros. destruct a as (a1, a2).
+         cbn. extensionality f.
+         now rewrite !preserve_id, identity_f, f_identity.
+       - intros.
+         destruct a as (a1, a2).
+         destruct b as (b1, b2).
+         destruct c as (c1, c2).
+         cbn in *.
+         destruct f as (f1, f2).
+         destruct g as (g1, g2).
+         cbn. extensionality h.
+         rewrite !preserve_comp.
+         now repeat rewrite assoc.
+Defined.
+
+Definition BiHomFunctorD_F_L {C D E: Category} (F: C → D) (L: E → D): (C^op) × E → CoqCatT.
+Proof. unshelve econstructor.
+       - intros. cbn in *. destruct X as (x, y).
+         exact (@arrow D (fobj L y) (fobj F x)).
+       - intros. cbn in *.
+         destruct a as (a1, a2).
+         destruct b as (b1, b2).
+         destruct f as (f1, f2).
+         cbn in *. intro g.
+         exact ((fmap L _ _ f2) o g o (fmap F _ _ f1)).
+       - repeat intro. now subst.
+       - intros. destruct a as (a1, a2).
+         cbn. extensionality f.
+         now rewrite !preserve_id, identity_f, f_identity.
+       - intros.
+         destruct a as (a1, a2).
+         destruct b as (b1, b2).
+         destruct c as (c1, c2).
+         cbn in *.
+         destruct f as (f1, f2).
+         destruct g as (g1, g2).
+         cbn. extensionality h.
+         rewrite !preserve_comp.
+         now repeat rewrite assoc.
+Defined.
