@@ -117,7 +117,6 @@ Proof. unshelve econstructor.
          now rewrite H, ob4.
 Defined.
 
-
 Class HomAdjunction {C D: Category} (F: Functor C D) (G: Functor D C): Type :=
   mk_Homadj
   {
@@ -819,6 +818,7 @@ Proof. intros. cbn in *.
 Defined.
 Check L.
 
+
 (*
 Lemma uniqueL: forall
                  {C D: Category}
@@ -840,6 +840,12 @@ Proof. intros.
        easy.
        assert (Compose_Functors FT (L F G A1) = F /\ Compose_Functors (L F G A1) G = GT) by admit.
        intros.
+       specialize (@moaL C D F G A1); intros. unfold A2 in *. fold M in X. fold A2 in X. cbn in *.
+       destruct X, A1, A2, fK0, fL0. cbn in *. unfold id in *.
+       unfold LA, RA in X. cbn in *.
+       
+       destruct X. cbn in *.
+       destruct A1, A2. cbn in *.
        pose proof A2 as A22.
        pose proof A1 as A11.
        apply adjEq1 in A11.
@@ -866,6 +872,7 @@ Proof. intros.
            extensionality b. admit.
        }
        destruct A11, A22, ob0, ob3. cbn in *.
+       
 *)
 
 (** Mac Lane's comparison theorem of 
@@ -944,6 +951,97 @@ Proof. intros C D F G A1 M CT FT GT A2.
        extensionality f. now rewrite preserve_comp0.
 Qed.
 Check ComparisonMacLane.
+
+
+
+Class MapOfAdjunctions {X A X' A': Category} 
+  (F : Functor X A)    (G : Functor A X)
+  (F': Functor X' A')  (G': Functor A' X')
+  (A1: Adjunction F G) (A2: Adjunction F' G'): Type :=
+  mk_MOA
+  {
+     fK     : Functor A A';
+     fL     : Functor X X';
+     moa_ob1: Compose_Functors F fK = Compose_Functors fL F';
+     moa_ob2: Compose_Functors G fL = Compose_Functors fK G';
+     moa_ob3: forall a, JMeq (fmap fL (trans (@unit X A F G A1) a)) ((trans (@unit X' A' F' G' A2)) (fobj fL a))
+  }.
+
+Lemma moaL: forall
+                 {C D: Category}
+                 (F: Functor C D)
+                 (G: Functor D C)
+                 (A1: Adjunction F G),
+                 let  M := (adj_mon   F G A1) in
+                 let CT := (Kleisli_Category C (Compose_Functors F G) M) in
+                 let FT := (LA F G M) in
+                 let GT := (RA F G M) in 
+                 let A2 := (mon_kladj F G M) in MapOfAdjunctions FT GT F G A2 A1.
+Proof. intros.
+       unshelve econstructor.
+       - exact (L F G A1).
+       - exact IdFunctor.
+       - unfold M, CT, GT. cbn in *.
+         assert (fobj (Compose_Functors FT (L F G A1)) = fobj F).
+         { 
+             unfold Compose_Functors. simpl in *.
+             unfold id in *. easy.
+         }
+         simpl.
+         specialize (F_split C D
+           (Compose_Functors FT (L F G A1)) F); intros.
+         specialize (H0 H).
+         assert (HC: Compose_Functors IdFunctor F = F).
+         { unfold IdFunctor. cbn. compute. admit. } 
+         rewrite HC.
+         apply H0.
+         unfold Compose_Functors. simpl.
+         destruct A1, unit0, counit0. simpl in *.
+         unfold id in *. destruct F, G, L.
+         simpl in *.
+         assert (H = eq_refl).
+         {
+            specialize (UIP_refl _   (fun a : @obj C => fobj a)); intros.
+            now specialize (H1 H).
+         }
+         rewrite H1.
+         extensionality a. extensionality b. extensionality f.
+         rewrite preserve_comp.
+         rewrite assoc.
+         now rewrite ob3, identity_f.
+       - simpl in *.
+         assert (fobj (Compose_Functors (L F G A1) G) = fobj GT).
+         { 
+             unfold Compose_Functors. simpl in *.
+             unfold id in *. easy.
+         }
+         simpl.
+         specialize (F_split (Kleisli_Category C 
+           (Compose_Functors F G) M) C 
+           (Compose_Functors (L F G A1) G) GT); intros.
+         specialize (H0 H).
+         assert (HC: Compose_Functors GT IdFunctor = GT) by admit.
+         rewrite HC. symmetry.
+         apply H0.
+         unfold Compose_Functors. simpl in *.
+         destruct A1, unit0, counit0. simpl in *.
+         unfold id in *. destruct F, G, L.
+         simpl in *.
+         assert (H = eq_refl).
+         { 
+            specialize (UIP_refl _  
+             (fun a : @obj C => fobj0 (fobj a))); intros.
+            now specialize (H1 H).
+         }
+         rewrite H1.
+         extensionality a. extensionality b.
+         extensionality f. now rewrite preserve_comp0.
+       - intros. destruct A1, A2, unit0, unit1. cbn in *.
+         unfold id in *.  apply eq_dep_JMeq.
+         apply EqdepFacts.eq_sigT_eq_dep. apply eq_existT_uncurried. cbn.
+         exists eq_refl. simpl.
+         admit.
+Admitted.
 
 Definition duL: forall
                  {C D   : Category}

@@ -12,3 +12,5 @@ Require Import Coq.Relations.Relation_Definitions.
 Require Export SetoidClass.
 Require Export Coq.Logic.FunctionalExtensionality.
 Require Export Coq.Logic.ProofIrrelevance.
+
+Require Export Coq.Logic.JMeq.
