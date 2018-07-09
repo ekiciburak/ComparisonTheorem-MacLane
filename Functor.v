@@ -92,6 +92,32 @@ Proof. unshelve econstructor.
          now repeat rewrite assoc.
 Defined.
 
+Definition BiHomFunctorC_GL {C D E: Category} (G: D → C) (L: E → D): C^op × E → CoqCatT.
+Proof. unshelve econstructor.
+       - intros. cbn in *. destruct X as (x, y).
+         exact (@arrow C (fobj G (fobj L y)) x).
+       - intros. cbn in *.
+         destruct a as (a1, a2).
+         destruct b as (b1, b2).
+         destruct f as (f1, f2).
+         cbn in *. intro g.
+         exact ((fmap G _ _ (fmap L _ _ f2)) o g o f1).
+       - repeat intro. now subst.
+       - intros. destruct a as (a1, a2).
+         cbn. extensionality f.
+         now rewrite !preserve_id, f_identity, identity_f.
+       - intros.
+         destruct a as (a1, a2).
+         destruct b as (b1, b2).
+         destruct c as (c1, c2).
+         cbn in *.
+         destruct f as (f1, f2).
+         destruct g as (g1, g2).
+         cbn. extensionality h.
+         rewrite !preserve_comp.
+         now repeat rewrite assoc.
+Defined.
+
 Definition BiHomFunctorD {C D: Category} (F: C → D): (C^op) × D → CoqCatT.
 Proof. unshelve econstructor.
        - intros. cbn in *. destruct X as (x, y).

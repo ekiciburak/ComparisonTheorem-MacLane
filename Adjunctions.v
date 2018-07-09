@@ -840,8 +840,13 @@ Proof. intros.
        easy.
        assert (Compose_Functors FT (L F G A1) = F /\ Compose_Functors (L F G A1) G = GT) by admit.
        intros.
+       pose proof A2 as A22.
+       pose proof A1 as A11.
+       apply adjEq1 in A11.
+       apply adjEq1 in A22.
        remember (BiHomFunctorD_LF_L FT (L F G A1)) as FTL.
        remember (BiHomFunctorD_F_L  F  (L F G A1)) as FL.
+       remember (BiHomFunctorD      FT)            as FTn.
        assert (FTL = FL).
        { 
          assert (fobj FTL = fobj FL).
@@ -851,7 +856,16 @@ Proof. intros.
            extensionality b. clear H2. destruct F, G, a, b.
            cbn in *. admit.
        }
-
+       remember (BiHomFunctorC    GT)           as GTn.
+       remember (BiHomFunctorC_GL G (L F G A1)) as GL.
+       assert (GTn = GL).
+       { assert (fobj GTn = fobj GL).
+         { rewrite HeqGTn, HeqGL. cbn. easy. }
+           specialize (F_split _ _ GTn GL H2); intros.
+           apply H3. cbn. extensionality a.
+           extensionality b. admit.
+       }
+       destruct A11, A22, ob0, ob3. cbn in *.
 *)
 
 (** Mac Lane's comparison theorem of 
