@@ -22,5 +22,8 @@ Monads.vo : Monads.v NaturalTransformation.vo Functor.vo Iso.vo Categories.vo Im
 Adjunctions.vo : Adjunctions.v Monads.vo NaturalTransformation.vo Functor.vo Iso.vo Categories.vo Imports.vo
 	coqc Adjunctions.v
 
+Comparison.vo : Comparison.v Adjunctions.vo Monads.vo NaturalTransformation.vo Functor.vo Iso.vo Categories.vo Imports.vo
+	coqc Comparison.v
+
 clean:
 	-rm -f *.vo *.glob .*.aux
