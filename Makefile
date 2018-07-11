@@ -1,5 +1,5 @@
 
-all: Imports.vo Categories.vo Iso.vo Functor.vo NaturalTransformation.vo Monads.vo Adjunctions.vo
+all: Imports.vo Categories.vo Iso.vo Functor.vo NaturalTransformation.vo Monads.vo Adjunctions.vo Comparison.vo
 
 Imports.vo : Imports.v
 	coqc Imports.v
