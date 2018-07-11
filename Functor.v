@@ -63,6 +63,37 @@ Proof.
     now destruct (proof_irrelevance _ preserve_comp0 preserve_comp1).
 Defined.
 
+Lemma ComposeIdr: forall {C D: Category} (F: Functor C D),
+  Compose_Functors F IdFunctor = F.
+Proof. intros.
+       assert (fobj (Compose_Functors F IdFunctor) = fobj F).
+       { cbn. easy. }
+       specialize (F_split _ _ _ _ H); intros.
+       apply H0. cbn.
+       extensionality a. extensionality b.
+       clear H0. cbn in H. unfold id in *.
+       assert (H = eq_refl).
+       { specialize (UIP_refl _   (fun a : @obj C => fobj F a)); intros.
+         now specialize (H0 H).
+       } now subst.
+Qed.
+
+
+Lemma ComposeIdl: forall {C D: Category} (F: Functor C D),
+  Compose_Functors IdFunctor F = F.
+Proof. intros.
+       assert (fobj (Compose_Functors IdFunctor F) = fobj F).
+       { cbn. easy. }
+       specialize (F_split _ _ _ _ H); intros.
+       apply H0. cbn.
+       extensionality a. extensionality b.
+       clear H0. cbn in H. unfold id in *.
+       assert (H = eq_refl).
+       { specialize (UIP_refl _   (fun a : @obj C => fobj F a)); intros.
+         now specialize (H0 H).
+       } now subst.
+Qed.
+
 Notation " C → D " := (Functor C D) (at level 40, left associativity).
 
 

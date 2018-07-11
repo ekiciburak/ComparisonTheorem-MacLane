@@ -910,7 +910,7 @@ Proof. intros.
            (Compose_Functors FT (L F G A1)) F); intros.
          specialize (H0 H).
          assert (HC: Compose_Functors IdFunctor F = F).
-         { unfold IdFunctor. cbn. compute. admit. } 
+         { now apply ComposeIdl. } 
          rewrite HC.
          apply H0.
          unfold Compose_Functors. simpl.
@@ -938,7 +938,8 @@ Proof. intros.
            (Compose_Functors F G) M) C 
            (Compose_Functors (L F G A1) G) GT); intros.
          specialize (H0 H).
-         assert (HC: Compose_Functors GT IdFunctor = GT) by admit.
+         assert (HC: Compose_Functors GT IdFunctor = GT).
+         { now apply ComposeIdr. } 
          rewrite HC. symmetry.
          apply H0.
          unfold Compose_Functors. simpl in *.
@@ -957,8 +958,8 @@ Proof. intros.
        - intros. destruct A1, A2, unit0, unit1. cbn in *.
          unfold id in *.  apply eq_dep_JMeq.
          apply EqdepFacts.eq_sigT_eq_dep. apply eq_existT_uncurried. cbn.
-         exists eq_refl. simpl.
-         admit.
+         exists eq_refl. cbn in *.
+        admit.
 Admitted.
 
 
