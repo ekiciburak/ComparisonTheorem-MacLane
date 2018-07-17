@@ -32,7 +32,7 @@ Proof. intros C D F G A1 M CT FT GT A2.
        apply adjEq1 in A22.
       *)
        exists (L F G A1).
-       split. cbn in *.
+       split.  cbn in *.
        
        unfold M, CT, GT. cbn in *.
        assert (fobj (Compose_Functors FT (L F G A1)) = fobj F).

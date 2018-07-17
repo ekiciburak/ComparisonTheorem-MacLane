@@ -29,8 +29,26 @@ Class Adjunction {C D: Category}
                         = @identity D (fobj F a);
       ob2   : forall a, (fmap G (trans counit a)) o (trans unit (fobj G a)) 
                         = @identity C (fobj G a)
-  }.
+(*
+      adj_morph_unique {c: @obj C} {d: @obj D} (f: @arrow C (fobj G d) c) (g h: @arrow D d (fobj F c)):
+         f = fmap G g o (trans (unit) c) -> 
+         f = fmap G h o (trans (unit) c) -> g = h
+*)
+}.
 Check Adjunction.
+
+Class Adjunct {C D: Category}
+              (F  : @Functor C D)
+              (G  : @Functor D C): Type :=
+  mk_Adt
+  {
+      adj_unit    :    (NaturalTransformation (@Id C) (Compose_Functors F G));
+      adj_morph_ex     {c: @obj C} {d: @obj D} (f: @arrow C (fobj G d) c): @arrow D d (fobj F c);
+      adj_morph_com    {c: @obj C} {d: @obj D} (f: @arrow C (fobj G d) c): f = fmap G (adj_morph_ex f) o (trans (adj_unit) c);
+      adj_morph_unique {c: @obj C} {d: @obj D} (f: @arrow C (fobj G d) c) (g h: @arrow D d (fobj F c)):
+         f = fmap G g o (trans (adj_unit) c) -> 
+         f = fmap G h o (trans (adj_unit) c) -> g = h
+  }.
 
 Arguments Adjunction {_} {_} _ _.
 
@@ -115,6 +133,34 @@ Proof. unshelve econstructor.
          trans1 (fobj F (fobj G (fobj G' a)))) = trans0 (fobj G' a)).
          { now rewrite preserve_comp, <- assoc, comm_diag1, assoc, ob6, identity_f. }
          now rewrite H, ob4.
+Defined.
+
+Lemma adjEq01 (C D: Category) (F: Functor C D) (U: Functor D C): 
+Adjunction F U -> Adjunct F U.
+Proof. intro A.
+       unshelve econstructor.
+       - destruct A. exact unit0.
+       - intros. destruct A, unit0, counit0. cbn in *.
+         unfold id in *. exact (trans0 d o fmap F f).
+       - cbn. intros. destruct A, unit0, counit0. cbn in *.
+         unfold id in *. rewrite preserve_comp.
+         rewrite <- assoc. rewrite <- trans_sym.
+         now rewrite assoc, ob4, identity_f.
+       - intros. cbn in *.
+         destruct A, unit0, counit0. cbn in *.
+         unfold id in *.
+         pose proof trans_sym0 as trans_symm0.
+         pose proof trans_sym as trans_symm.
+         pose proof comm_diag as comm_diagg.
+         pose proof comm_diag0 as comm_diagg0.
+
+         rewrite H in H0. remember f_equal.
+         apply (f_equal (fmap F)) in H0.
+         rewrite !preserve_comp in H0.
+         apply (f_equal (fun w => comp(trans0 _ ) w)) in H0.
+         rewrite !assoc in H0. rewrite !trans_sym0 in H0.
+         rewrite <- !assoc in H0.
+         now rewrite !ob3, !f_identity in H0.
 Defined.
 
 Class HomAdjunction {C D: Category} (F: Functor C D) (G: Functor D C): Type :=
@@ -209,7 +255,7 @@ Proof. intro A.
               rewrite !preserve_comp0.
               rewrite <- assoc.
               apply lcancel. apply lcancel.
-              now rewrite <- trans_sym. 
+              now rewrite <- trans_sym.
          + cbn in *.
            apply Nt_split. cbn in *.
            destruct A, F, U, unit0, counit0.
@@ -404,6 +450,7 @@ Proof. intro A.
          rewrite H in H''. easy.
 Qed.
 
+
 Definition T2toT: forall
                  {C D: Category}
                  (F  : @Functor C D)
@@ -492,7 +539,6 @@ Proof. intros C D F U A. apply adjEq2 in A.
 Defined.
 Check homadj_mon.
 
-
 (** every adjunction gives raise to a comonad *)
 Theorem adj_comon: forall
                  {C D: Category}
@@ -527,6 +573,7 @@ Proof. intros C D F U A.
 Defined.
 Check adj_comon.
 
+
 (** every hom-adjunction gives raise to a comonad *)
 Theorem homadj_comon: forall
                  {C D: Category}
@@ -537,6 +584,7 @@ Proof. intros C D F U A. apply adjEq2 in A.
        now apply adj_comon.
 Defined.
 Check homadj_comon.
+
 
 Theorem mon_kladj: forall
                    {C D: Category}
@@ -852,6 +900,52 @@ Proof. intros C D F G A1 cM M CD FD GD A2. simpl in *.
          now rewrite comm_diag.
 Defined.
 Check duL.
+
+(*
+Definition lAdjUnique: forall
+               {C D   : Category}
+               (a b   : @obj C)
+               (F     : Functor C D)
+               (G     : Functor D C) 
+               (A1    : Adjunction F G),
+               let M  := (adj_mon F G A1) in
+               let CM := (adj_comon F G A1) in
+               let CT := (Kleisli_Category C (Compose_Functors F G) M) in
+               let FT := (LA F G M) in
+               let GT := (RA F G M) in
+               let A2 := (mon_kladj F G M) in
+  forall f: arrow b a, exists !f': arrow (fobj FT b) (fobj FT a), JMeq (fmap GT f' o trans (@unit _ _ FT GT A2) a) f.
+Proof. intros. cbn in *. unfold id in *.
+       destruct FT, GT, A2, unit, counit. cbn in *.
+       unfold id in *. exists (trans b o f).
+       unfold unique. split.
+       rewrite preserve_comp.
+       apply eq_dep_id_JMeq.
+       apply EqdepFacts.eq_sigT_iff_eq_dep.
+       apply EqdepFacts.eq_sigT_sig_eq.
+       SearchAbout existT.
+       cbn.
+
+
+Lemma lAdjUnique:forall
+                  {C D   : Category}
+                  (a b   : @obj C)
+                  (F     : Functor C D)
+                  (G     : Functor D C)
+                  (A     : Adjunction F G),
+  forall f: arrow b a, exists !f': arrow (fobj F b) (fobj F a), JMeq (fmap G f' o trans (@unit _ _ F G A) a) f.
+Proof. intros. exists (fmap F f).
+       unfold unique. split.
+       destruct A, G, F, unit0, counit0. cbn in *.
+       unfold id in *. apply eq_dep_id_JMeq.
+       apply EqdepFacts.eq_sigT_iff_eq_dep.
+       apply EqdepFacts.eq_sigT_sig_eq.
+       SearchAbout existT.
+       cbn.
+
+ SearchAbout EqdepFacts.eq_dep.
+       SearchAbout JMeq.
+*)
 
 (*
 Lemma uniqueduL: forall

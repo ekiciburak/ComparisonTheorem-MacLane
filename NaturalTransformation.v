@@ -129,6 +129,33 @@ Proof.
          now rewrite preserve_id, f_identity.
 Defined.
 
+(*
+Definition CurryingFunctor (C D E: Category) (F: Functor (Product_Category C D) E):
+  Functor C (FunctorCategory D E).
+Proof. intros.
+       unshelve econstructor.
+       - cbn. intro a.
+         + unshelve econstructor.
+           ++ cbn. destruct F. cbn in *. intro b.
+              exact (fobj (a, b)).
+           ++ cbn. intros. destruct F. cbn in *.
+              clear fmapP preserve_id preserve_comp.
+              specialize (fmap (a, a0) (a, b)). cbn in *.
+              apply fmap. exact (identity a, f).
+           ++ repeat intro. now subst.
+           ++ cbn. intros. destruct F. cbn in .
+              now rewrite preserve_id.
+           ++ cbn. intros. destruct F. cbn in *.
+              specialize (preserve_comp (a, a0) (a, b) (a, c)). cbn in *.
+              specialize (preserve_comp  (identity a, g) (identity a, f)). cbn in *.
+              rewrite identity_f in preserve_comp. now rewrite preserve_comp.
+       - intros. cbn.
+         unshelve econstructor.
+         + intros. cbn. destruct F. cbn in *.
+           clear fmapP preserve_id preserve_comp.
+           apply fmap. cbn. exact (f, identity a0).
+         + intros. cbn. destruct F. cbn in *.
+*)
 
 Definition muT(C D   : Category) 
               (F     : @Functor C D)
