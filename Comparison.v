@@ -28,8 +28,8 @@ Proof. intros C D F G A1 M CT FT GT A2.
       (*
        pose proof A2 as A22.
        pose proof A1 as A11.
-       apply adjEq1 in A11.
-       apply adjEq1 in A22.
+       apply adjEq12 in A11.
+       apply adjEq12 in A22.
       *)
        exists (L F G A1).
        split.  cbn in *.
@@ -106,8 +106,8 @@ Proof. intros C D F G A1 cM CD FD GD A2.
       (*
        pose proof A2 as A22.
        pose proof A1 as A11.
-       apply adjEq1 in A11.
-       apply adjEq1 in A22.
+       apply adjEq10 in A11.
+       apply adjEq12 in A22.
       *)
        exists (duL F G A1).
        split. cbn in *.

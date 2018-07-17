@@ -135,7 +135,7 @@ Proof. unshelve econstructor.
          now rewrite H, ob4.
 Defined.
 
-Lemma adjEq01 (C D: Category) (F: Functor C D) (U: Functor D C): 
+Lemma adjEq10 (C D: Category) (F: Functor C D) (U: Functor D C): 
 Adjunction F U -> Adjunct F U.
 Proof. intro A.
        unshelve econstructor.
@@ -163,6 +163,45 @@ Proof. intro A.
          now rewrite !ob3, !f_identity in H0.
 Defined.
 
+Lemma adjEq01 (C D: Category) (F: Functor C D) (U: Functor D C): 
+Adjunct F U -> Adjunction F U.
+Proof. intro A.
+       unshelve econstructor.
+       - destruct A. exact adj_unit0.
+       - unshelve econstructor.
+         + intros. destruct A, adj_unit0. unfold Id. cbn in *. unfold id in *.
+           apply adj_morph_ex0. exact (identity (fobj U a)).
+         + intros. cbn in *.
+           destruct A, adj_unit0. cbn in *. unfold id in *.
+           apply adj_morph_unique0 with (f := fmap U f );
+           rewrite !preserve_comp.
+           now rewrite <- assoc, <- adj_morph_com0, f_identity.
+           rewrite <- assoc. rewrite <- trans_sym.
+           now rewrite assoc, <- adj_morph_com0, identity_f.
+         + intros. cbn in *.
+           destruct A, adj_unit0. cbn in *. unfold id in *.
+           apply adj_morph_unique0 with (f := fmap U f );
+           rewrite !preserve_comp.
+           rewrite <- assoc. rewrite <- trans_sym.
+           now rewrite assoc, <- adj_morph_com0, identity_f.
+           now rewrite <- assoc, <- adj_morph_com0, f_identity.
+       - intros. cbn in *.
+         destruct A, adj_unit0. cbn in *. unfold id in *.
+         apply adj_morph_unique0 with (f := trans a).
+         pose proof adj_morph_com0 as adj_morph_com1.
+         specialize (adj_morph_com0 (fobj U (fobj F a)) (fobj F a) (identity (fobj U (fobj F a))) ).
+         assert (trans a = identity (fobj U (fobj F a))  o trans a).
+         { now rewrite identity_f. } rewrite H at 1. 
+         rewrite adj_morph_com0 at 1.
+         rewrite <- adj_morph_com1.
+         rewrite preserve_comp. rewrite <- assoc, <- trans_sym.
+         rewrite assoc. apply rcancel. easy.
+         now rewrite preserve_id, identity_f.
+       - intros. cbn in *.
+         destruct A, adj_unit0. cbn in *. unfold id in *.
+         now rewrite adj_morph_com0.
+Defined.
+
 Class HomAdjunction {C D: Category} (F: Functor C D) (G: Functor D C): Type :=
   mk_Homadj
   {
@@ -170,7 +209,7 @@ Class HomAdjunction {C D: Category} (F: Functor C D) (G: Functor D C): Type :=
   }.
 Check HomAdjunction.
 
-Lemma adjEq1 (C D: Category) (F: Functor C D) (U: Functor D C): 
+Lemma adjEq12 (C D: Category) (F: Functor C D) (U: Functor D C): 
 Adjunction F U -> HomAdjunction F U.
 Proof. intro A.
        unshelve econstructor.
@@ -284,7 +323,7 @@ Proof. intro A.
            now rewrite identity_f.
 Defined.
 
-Lemma adjEq2 (C D: Category) (F: Functor C D) (U: Functor D C): 
+Lemma adjEq21 (C D: Category) (F: Functor C D) (U: Functor D C): 
 HomAdjunction F U -> Adjunction F U.
 Proof. intro A.
        unshelve econstructor.
@@ -534,7 +573,7 @@ Theorem homadj_mon: forall
                  (F  : @Functor C D)
                  (U  : @Functor D C),
                  HomAdjunction F U -> Monad C (Compose_Functors F U).
-Proof. intros C D F U A. apply adjEq2 in A.
+Proof. intros C D F U A. apply adjEq21 in A.
        now apply adj_mon.
 Defined.
 Check homadj_mon.
@@ -580,7 +619,7 @@ Theorem homadj_comon: forall
                  (F  : @Functor C D)
                  (U  : @Functor D C),
                  HomAdjunction F U -> coMonad D (Compose_Functors U F).
-Proof. intros C D F U A. apply adjEq2 in A.
+Proof. intros C D F U A. apply adjEq21 in A.
        now apply adj_comon.
 Defined.
 Check homadj_comon.
@@ -686,7 +725,7 @@ Theorem mon_klhomadj: forall
                    (GT := RA F G M), HomAdjunction FT GT.
 Proof. intros.
        specialize (mon_kladj F G M); intros.
-       apply adjEq1 in X. easy.
+       apply adjEq12 in X. easy.
 Defined.
 
 Theorem comon_cokladj: forall
@@ -779,7 +818,7 @@ Theorem comon_coklhomadj: forall
                    (cM : coMonad C D)
                    (FD := cLA F G cM)
                    (GD := cRA F G cM), HomAdjunction FD GD.
-Proof. intros. apply adjEq1. 
+Proof. intros. apply adjEq12. 
        apply comon_cokladj.
 Defined.
 
@@ -832,7 +871,7 @@ Theorem mon_emhomadj: forall
                    (M  : Monad C T)
                    (FT := LAEM F G M)
                    (GT := RAEM F G M), HomAdjunction FT GT.
-Proof. intros. apply adjEq1.
+Proof. intros. apply adjEq12.
        apply mon_emadj.
 Defined.
 
