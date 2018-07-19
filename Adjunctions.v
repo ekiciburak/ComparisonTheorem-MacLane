@@ -135,10 +135,47 @@ Proof. unshelve econstructor.
          now rewrite H, ob4.
 Defined.
 
-Lemma adjEq10 (C D: Category) (F: Functor C D) (U: Functor D C): 
-Adjunction F U -> Adjunct F U.
-Proof. intro A.
-       unshelve econstructor.
+
+Lemma adjEq10_1: forall (C D: Category) (F: Functor C D) (G: Functor D C) (A: Adjunction F G),
+       (forall (a: @obj C) (b: @obj D) (f: @arrow C (fobj G b) a) (g h: @arrow D b (fobj F a)),
+         f = fmap G g o (trans (@unit C D F G A) a) -> 
+         f = fmap G h o (trans (@unit C D F G A) a) -> g = h).
+Proof. intros. cbn in *.
+         destruct A, unit0, counit0. cbn in *.
+         unfold id in *.
+         rewrite H in H0. remember f_equal.
+         apply (f_equal (fmap F)) in H0.
+         rewrite !preserve_comp in H0.
+         apply (f_equal (fun w => comp(trans0 _ ) w)) in H0.
+         rewrite !assoc in H0. rewrite !trans_sym0 in H0.
+         rewrite <- !assoc in H0.
+         now rewrite !ob3, !f_identity in H0.
+Qed.
+
+
+Lemma adjEq10_10: forall (C D: Category) (F: Functor C D) (G: Functor D C) (A: Adjunction F G),
+       (forall (a: @obj C) (b: @obj D) (f: @arrow C (fobj G b) a),
+        exists !(g: @arrow D b (fobj F a)),
+         f = fmap G g o (trans (@unit C D F G A) a)).
+Proof. intros. cbn in *.
+         destruct A, unit0, counit0. cbn in *.
+         unfold id in *.
+         exists (trans0 b o fmap F f). 
+         unfold unique. split.
+         now rewrite preserve_comp, <- assoc, comm_diag, assoc,
+         ob4, identity_f.
+         intros.
+         apply (f_equal (fmap F)) in H.
+         rewrite !preserve_comp in H.
+         apply (f_equal (fun w => comp(trans0 _ ) w)) in H.
+         rewrite !assoc in H. rewrite !trans_sym0 in H.
+         rewrite <- !assoc in H.
+         now rewrite !ob3, !f_identity in H.
+Qed.
+
+
+Definition adjEq10 (C D: Category) (F: Functor C D) (U: Functor D C) (A: Adjunction F U): Adjunct F U.
+Proof. unshelve econstructor.
        - destruct A. exact unit0.
        - intros. destruct A, unit0, counit0. cbn in *.
          unfold id in *. exact (trans0 d o fmap F f).
@@ -149,11 +186,6 @@ Proof. intro A.
        - intros. cbn in *.
          destruct A, unit0, counit0. cbn in *.
          unfold id in *.
-         pose proof trans_sym0 as trans_symm0.
-         pose proof trans_sym as trans_symm.
-         pose proof comm_diag as comm_diagg.
-         pose proof comm_diag0 as comm_diagg0.
-
          rewrite H in H0. remember f_equal.
          apply (f_equal (fmap F)) in H0.
          rewrite !preserve_comp in H0.
@@ -163,10 +195,8 @@ Proof. intro A.
          now rewrite !ob3, !f_identity in H0.
 Defined.
 
-Lemma adjEq01 (C D: Category) (F: Functor C D) (U: Functor D C): 
-Adjunct F U -> Adjunction F U.
-Proof. intro A.
-       unshelve econstructor.
+Definition adjEq01 (C D: Category) (F: Functor C D) (U: Functor D C) (A: Adjunct F U): Adjunction F U.
+Proof. unshelve econstructor.
        - destruct A. exact adj_unit0.
        - unshelve econstructor.
          + intros. destruct A, adj_unit0. unfold Id. cbn in *. unfold id in *.
@@ -904,7 +934,6 @@ Proof. intros. cbn in *.
          now rewrite <- comm_diag0.
 Defined.
 Check L.
-
 
 
 Definition duL: forall
