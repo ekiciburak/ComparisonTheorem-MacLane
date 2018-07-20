@@ -29,11 +29,6 @@ Class Adjunction {C D: Category}
                         = @identity D (fobj F a);
       ob2   : forall a, (fmap G (trans counit a)) o (trans unit (fobj G a)) 
                         = @identity C (fobj G a)
-(*
-      adj_morph_unique {c: @obj C} {d: @obj D} (f: @arrow C (fobj G d) c) (g h: @arrow D d (fobj F c)):
-         f = fmap G g o (trans (unit) c) -> 
-         f = fmap G h o (trans (unit) c) -> g = h
-*)
 }.
 Check Adjunction.
 
@@ -152,6 +147,22 @@ Proof. intros. cbn in *.
          now rewrite !ob3, !f_identity in H0.
 Qed.
 
+
+Lemma adjEq10_2: forall (C D: Category) (F: Functor D C) (G: Functor C D) (A: Adjunction F G),
+       (forall (a: @obj C) (b: @obj D) (f: @arrow C a (fobj F b)) (g h: @arrow D (fobj G a) b),
+         f = (trans (@counit D C F G A) a) o fmap F g -> 
+         f = (trans (@counit D C F G A) a) o fmap F h -> g = h).
+Proof. intros. cbn in *.
+         destruct A, unit0, counit0. cbn in *.
+         unfold id in *.
+         rewrite H in H0. remember f_equal.
+         apply (f_equal (fmap G)) in H0.
+         rewrite !preserve_comp in H0.
+         apply (f_equal (fun w => comp w (trans _ ))) in H0.
+         rewrite <- !assoc in H0. rewrite !comm_diag in H0.
+         rewrite !assoc in H0.
+         now rewrite !ob4, !identity_f in H0.
+Qed.
 
 Lemma adjEq10_10: forall (C D: Category) (F: Functor C D) (G: Functor D C) (A: Adjunction F G),
        (forall (a: @obj C) (b: @obj D) (f: @arrow C (fobj G b) a),

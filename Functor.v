@@ -63,6 +63,19 @@ Proof.
     now destruct (proof_irrelevance _ preserve_comp0 preserve_comp1).
 Defined.
 
+(** F_split with JMeq*)
+Lemma F_split2: forall
+               (C D  : Category)
+               (F G  : Functor C D)
+               (ObjEq: (fobj F) = (fobj G)),
+               JMeq (fmap F) (fmap G) -> F = G.
+Proof.
+    destruct F; destruct G; simpl; intros; subst; apply JMeq_eq in H; subst; f_equal.
+    now destruct (proof_irrelevance _ fmapP0 fmapP1).
+    now destruct (proof_irrelevance _ preserve_id0 preserve_id1).
+    now destruct (proof_irrelevance _ preserve_comp0 preserve_comp1).
+Defined.
+
 Lemma ComposeIdr: forall {C D: Category} (F: Functor C D),
   Compose_Functors F IdFunctor = F.
 Proof. intros.
