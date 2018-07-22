@@ -29,17 +29,6 @@ Class SubCategory (C: Category): Type :=
   }.
 
 
-Notation CoqCat U :=
-{|
-  obj := U;
-  arrow := (fun A B => B -> A);
-  identity := (fun _ => id);
-  comp :=   (fun A B C (g: B -> C) (f: A -> B) a => g (f a))
-|}.
-
-Program Definition CoqCatT: Category := CoqCat Type.
-Program Definition CoqCatS: Category := CoqCat Set.
-
 Definition Product_Category (C D: Category) : Category.
 Proof.
   refine (@mk_Category 
@@ -70,3 +59,17 @@ Defined.
 
 Notation "C × D ":= (@Product_Category C D) (at level 40, left associativity).
 Notation "C ^op" := (@Dual_Category C) (at level 40, left associativity).
+
+
+(** Coq Universes as categories *)
+Notation CoqCat U :=
+{|
+  obj := U;
+  arrow := (fun A B => B -> A);
+  identity := (fun _ => id);
+  comp :=   (fun A B C (g: B -> C) (f: A -> B) a => g (f a))
+|}.
+
+Program Definition CoqCatT: Category := CoqCat Type.
+Program Definition CoqCatS: Category := CoqCat Set.
+Program Definition CoqCatP: Category := CoqCat Prop.

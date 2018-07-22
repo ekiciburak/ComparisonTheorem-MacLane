@@ -32,6 +32,54 @@ Class Adjunction {C D: Category}
 }.
 Check Adjunction.
 
+
+Definition FpGp_Adjoint (p: @obj CoqCatP) : Adjunction (Fp p) (Gp p).
+Proof. unshelve econstructor.
+       - unshelve econstructor.
+         + intros. cbn in *. exact (Eta p a).
+         + intros. cbn in *. easy.
+         + intros. cbn in *. easy.
+       - unshelve econstructor.
+         + intros. cbn in *. exact (Eps p a). (* here the modus ponens *) 
+         + intros. cbn in *.
+           extensionality H.
+           now destruct H.
+         + intros. cbn in *.
+           extensionality H. 
+           now destruct H.
+       - intros. cbn in *. 
+         extensionality H.
+         now destruct H.
+       - intros. cbn in *.
+         easy.
+Defined.
+
+(** no proof? *)
+(*
+Definition FpGp_Isomorph (p: @obj CoqCatP): @Isomorphism (FunctorCategory CoqCatP CoqCatP) (Fp p) (Gp p).
+Proof. unshelve econstructor.
+       - cbn in *.
+         + unshelve econstructor.
+           ++ intros. cbn in *.
+              intros. easy.
+           ++ intros. cbn in *.
+              extensionality H.
+              destruct H. easy.
+           ++ intros. cbn in *.
+              extensionality H.
+              destruct H. easy.
+      - cbn in *.
+         + unshelve econstructor.
+           ++ intros. cbn in *.
+              intros. split. easy.
+           ++ intros. cbn in *.
+              extensionality H.
+              destruct H. easy.
+           ++ intros. cbn in *.
+              extensionality H.
+              destruct H. easy.
+*)
+
 Class Adjunct {C D: Category}
               (F  : @Functor C D)
               (G  : @Functor D C): Type :=
@@ -930,10 +978,8 @@ Definition L: forall
 Proof. intros. cbn in *.
        unshelve econstructor.
        - exact (fobj F).
-       - intros.
-         destruct CM, eps. cbn in *.
-         unfold id in *. 
-         exact ((trans (fobj F b)) o fmap F f).
+       - intros a b f. destruct CM. 
+         exact (trans eps (fobj F b) o fmap F f).
        - repeat intro. now subst.
        - intros. destruct A1, unit0, counit0. cbn in *. now rewrite <- ob3.
        - intros. cbn in *.

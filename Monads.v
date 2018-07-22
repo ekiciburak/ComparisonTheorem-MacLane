@@ -366,3 +366,48 @@ Proof. destruct cM, eps0.
 Defined.
 Check cRA.
 
+
+(** State monad *)
+Definition Ms: forall (s: @obj CoqCatT), Monad CoqCatT (Fs s).
+Proof. intros.
+       unshelve econstructor.
+       - unshelve econstructor.
+         + intros. cbn in *. intros.
+           unfold State. intros. easy.
+         + intros. cbn in *. 
+           extensionality a0. compute. 
+           extensionality st. easy.
+         + intros. cbn.
+           extensionality a0. compute. 
+           extensionality st. easy.
+       - unshelve econstructor.
+         + intros. cbn in *. intros.
+           unfold State in *. intros.
+           destruct X. easy. now apply p.
+         + intros. cbn.
+           extensionality a0. compute. 
+           extensionality st.
+           destruct a0. easy.
+         + intros. cbn.
+           extensionality a0. compute. 
+           extensionality st.
+           destruct a0. easy.
+       - intros. cbn in *.
+         extensionality a0. compute. 
+         extensionality st.
+         destruct a0. easy.
+       - intros. cbn in *.
+         extensionality a0. compute. 
+         extensionality st.
+         destruct a0. easy.
+       - intros. cbn in *.
+         extensionality a0. compute. 
+         extensionality st.
+         destruct a0. easy.
+       - intros. cbn in *.
+         extensionality a0. compute. 
+         extensionality st.
+         destruct a0. easy.
+Defined.
+
+

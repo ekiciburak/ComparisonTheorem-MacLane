@@ -63,7 +63,7 @@ Proof.
     now destruct (proof_irrelevance _ preserve_comp0 preserve_comp1).
 Defined.
 
-(** F_split with JMeq*)
+(** F_split with JMeq *)
 Lemma F_split2: forall
                (C D  : Category)
                (F G  : Functor C D)
@@ -239,3 +239,94 @@ Proof. unshelve econstructor.
          rewrite !preserve_comp.
          now repeat rewrite assoc.
 Defined.
+
+
+(** Some examples *)
+
+(** List functor *)
+Fixpoint fmapList {A B: Type} (f: A -> B) (l: list A): list B :=
+  match l with
+    | nil       => nil
+    | cons x xs => cons (f x) (fmapList f xs)
+  end.
+
+Definition ListFunctor: Functor CoqCatT CoqCatT.
+Proof. unshelve econstructor.
+       - intros. exact (list X).
+       - intros. cbn in *. intro l.
+         exact (@fmapList a b f l).
+       - repeat intro. now subst.
+       - intros. cbn in *. unfold id.
+         extensionality l.
+         induction l as [ | xl IHxl ]; intros.
+         + now cbn.
+         + cbn in *. now rewrite IHIHxl.
+       - intros. cbn in *. 
+         extensionality l.
+         induction l as [ | xl IHxl ]; intros.
+         + now cbn.
+         + cbn in *. now rewrite IHIHxl.
+Defined.
+
+(** State functor. *)
+
+Definition State (s a : Type) := s -> (a * s).
+
+Definition fmapFs (s A B: Type) (f: A -> B) (x : State s A) :=
+  fun st =>
+    match x st with
+      | (a,st') => (f a, st')
+    end.
+
+Definition Fs: forall (s: @obj CoqCatT), Functor CoqCatT CoqCatT.
+Proof. intros.
+       unshelve econstructor.
+       - intros a. exact (State s a).
+       - intros. cbn in *. intros.
+         exact (fmapFs s a b f X).
+       - repeat intro. now subst.
+       - intros. cbn in *.
+         extensionality X. compute.
+         extensionality st. now destruct X.
+       - intros. cbn in *.
+         extensionality X. compute.
+         extensionality st. now destruct X.
+Defined.
+
+
+(** Two adjoint functors Fp and Gp over Prop forming an adjunction *)
+
+Definition fmapFp (p a b : Prop) (f: a -> b) (H: p /\ a): p /\ b :=
+  match H with
+    | conj x y => conj x (f y)
+  end.
+
+Definition Fp: forall (p: @obj CoqCatP), Functor CoqCatP CoqCatP.
+Proof. unshelve econstructor.
+       - intro q. exact (p /\ q).
+       - intros. cbn in *. intros. exact (fmapFp p a b f H).
+       - repeat intro. now subst.
+       - intros. cbn in *. extensionality H. destruct H. easy.
+       - intros. cbn in *. extensionality H. destruct H. easy.
+Defined.
+
+Definition fmapGp (p a b : Prop) (f: a -> b) (H: p -> a): p -> b :=
+  fun x: p => f (H x).
+
+Definition Gp: forall (p: @obj CoqCatP), Functor CoqCatP CoqCatP.
+Proof. unshelve econstructor.
+       - intro q. exact (p -> q).
+       - intros. cbn in *. intros. exact (fmapGp p a b f H H0).
+       - repeat intro. now subst.
+       - intros. cbn in *. extensionality H. easy.
+       - intros. cbn in *. extensionality H. easy.
+Defined.
+
+Definition Eta (p a: Prop) (H: id a) (H1: p): p /\ a.
+Proof. exact (conj H1 H). Defined.
+
+Definition Eps (p a: Prop) (H: p /\ (p -> a)): id a :=
+  match H with
+    | conj x y => y x
+  end.
+
