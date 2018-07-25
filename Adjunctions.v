@@ -1071,7 +1071,45 @@ Proof. intros.
               { now rewrite f_identity. }
               symmetry. rewrite H. apply lcancel.
               now rewrite <- ob4.
-           ++ admit.
+           ++ cbn in *.
+              destruct A1, unit0, counit0. cbn in *.
+              symmetry. rewrite <- preserve_comp.
+              rewrite <- comm_diag0.
+              rewrite preserve_comp.
+              repeat setoid_rewrite <- assoc at 1.
+              assert (fmap G (trans0 a) o (fmap G (trans0 (fobj F (fobj G a))) o 
+              trans (fobj G (fobj F (fobj G a)))) o fmap G (trans0 (fobj F (fobj G a))) = 
+              fmap G (trans0 a) o fmap G (trans0 (fobj F (fobj G a)))).
+              { rewrite ob4. now rewrite f_identity. }
+
+              assert(fmap G (trans0 a)
+              o (fmap G (trans0 (fobj F (fobj G a))) o 
+              (trans (fobj G (fobj F (fobj G a))) o 
+              fmap G (fmap F (fmap G (trans0 a) o 
+              (fmap G (trans0 (fobj F (fobj G a))) o 
+              trans (fobj G (fobj F (fobj G a)))))))) =
+              fmap G (trans0 a) o fmap G (trans0 (fobj F (fobj G a)))
+              ).
+              {
+                rewrite <- !preserve_comp.
+                rewrite !ob4. rewrite !f_identity.
+                rewrite <- trans_sym0.
+                rewrite !assoc.
+                rewrite assoc in H.
+                repeat rewrite <- assoc.
+                rewrite assoc.
+                unfold id in *.
+                repeat setoid_rewrite <- assoc at 1.
+                setoid_rewrite assoc at 2.
+                setoid_rewrite assoc at 1.
+                rewrite ob4.
+                rewrite !f_identity.
+                rewrite preserve_comp.
+                easy.
+              }
+              rewrite <- H in H0.
+              rewrite !assoc in *.
+              easy.
        - intros. cbn in *. 
          + unshelve econstructor.
            ++ cbn in *. exact (fmap G f).
