@@ -32,26 +32,51 @@ Class Adjunction {C D: Category}
 }.
 Check Adjunction.
 
+(*
+Definition Eta (p a: Prop) (H: id a) (H1: p): p /\ a := conj H1 H.
+
+Definition Eps (p a: Prop) (H: p /\ (p -> a)): id a :=
+  match H with
+    | conj x y => y x
+  end.
+*)
+
+Definition eta_GpFp: forall (p: @obj CoqCatP),
+  NaturalTransformation Id (Compose_Functors (Fp p) (Gp p)).
+Proof. intro p.
+       unshelve econstructor.
+       - cbn in *. intros q pq.
+         exact (fun (pp: p) => conj pp pq).
+       - cbn. intros a b f.
+         extensionality pa. easy.
+       - cbn. intros a b f.
+         extensionality pa. easy.
+Defined.
+
+
+Definition eps_FpGp: forall (p: @obj CoqCatP),
+  NaturalTransformation (Compose_Functors (Gp p) (Fp p)) Id.
+Proof. intro p.
+       unshelve econstructor.
+       - cbn in *. intros q ModusPonens.
+         destruct ModusPonens as (pp & impl_pq).
+         exact (impl_pq pp).
+       - cbn. intros a b f.
+         extensionality pp. 
+         destruct pp. easy.
+       - cbn. intros a b f.
+         extensionality pp.
+         destruct pp. easy.
+Defined.
+
 
 Definition FpGp_Adjoint (p: @obj CoqCatP) : Adjunction (Fp p) (Gp p).
 Proof. unshelve econstructor.
-       - unshelve econstructor.
-         + intros. cbn in *. exact (Eta p a).
-         + intros. cbn in *. easy.
-         + intros. cbn in *. easy.
-       - unshelve econstructor.
-         + intros. cbn in *. exact (Eps p a). (* here the modus ponens *) 
-         + intros. cbn in *.
-           extensionality H.
-           now destruct H.
-         + intros. cbn in *.
-           extensionality H. 
-           now destruct H.
-       - intros. cbn in *. 
-         extensionality H.
+       - exact (eta_GpFp p).
+       - exact (eps_FpGp p).
+       - intro a. extensionality H.
          now destruct H.
-       - intros. cbn in *.
-         easy.
+       - intro a. easy.
 Defined.
 
 (** no proof? *)
@@ -720,8 +745,8 @@ Theorem mon_kladj: forall
                    (G  : Functor D C)
                    (T  := Compose_Functors F G)
                    (M  : Monad C T)
-                   (FT := LA F G M)
-                   (GT := RA F G M), Adjunction FT GT.
+                   (FT := FT F G M)
+                   (GT := GT F G M), Adjunction FT GT.
 Proof. intros.
        unshelve econstructor.
        - unshelve econstructor.
@@ -810,8 +835,8 @@ Theorem mon_klhomadj: forall
                    (G  : Functor D C)
                    (T  := Compose_Functors F G)
                    (M  : Monad C T)
-                   (FT := LA F G M)
-                   (GT := RA F G M), HomAdjunction FT GT.
+                   (FT := FT F G M)
+                   (GT := GT F G M), HomAdjunction FT GT.
 Proof. intros.
        specialize (mon_kladj F G M); intros.
        apply adjEq12 in X. easy.
@@ -972,8 +997,8 @@ Definition L: forall
                let M  := (adj_mon F G A1) in
                let CM := (adj_comon F G A1) in
                let CT := (Kleisli_Category C (Compose_Functors F G) M) in
-               let FT := (LA F G M) in
-               let GT := (RA F G M) in
+               let FT := (FT F G M) in
+               let GT := (GT F G M) in
                let A2 := (mon_kladj F G M) in Functor CT D.
 Proof. intros. cbn in *.
        unshelve econstructor.
@@ -992,6 +1017,72 @@ Proof. intros. cbn in *.
 Defined.
 Check L.
 
+Definition K: forall
+               {C D   : Category}
+               (F     : Functor C D)
+               (G     : Functor D C) 
+               (A1    : Adjunction F G),
+               let M  := (adj_mon F G A1) in
+               let CM := (adj_comon F G A1) in
+               let EMC:= (EilenbergMooreCategory C (Compose_Functors F G) M) in
+               let FT := (FT F G M) in
+               let GT := (GT F G M) in
+               let A2 := (mon_emadj F G M) in Functor EMC D.
+Proof. intros.
+       unshelve econstructor.
+       - intro a. cbn in *.
+         destruct a. exact (fobj F alg_obj).
+       - intros a b f. destruct a, b, f. cbn in *.
+         exact (fmap F tf).
+       - repeat intro. now subst.
+       - intros. cbn in *. now rewrite preserve_id.
+       - intros. cbn in *. now rewrite preserve_comp.
+Defined.
+Check K.
+
+Definition invK: forall
+               {C D   : Category}
+               (F     : Functor C D)
+               (G     : Functor D C) 
+               (A1    : Adjunction F G),
+               let M  := (adj_mon F G A1) in
+               let CM := (adj_comon F G A1) in
+               let EMC:= (EilenbergMooreCategory C (Compose_Functors F G) M) in
+               let FT := (FT F G M) in
+               let GT := (GT F G M) in
+               let A2 := (mon_emadj F G M) in Functor D EMC.
+Proof. intros.
+       unshelve econstructor.
+       - intro a. cbn in *.
+         + unshelve econstructor.
+           ++ exact (fobj G a).
+           ++ cbn in *. destruct A1, unit0, counit0. cbn in *.
+              unfold id in *.
+              exact ( (fmap G (trans0 a)) o (fmap G (fmap F (fmap G (trans0 a)))) o 
+                                 trans (fobj G (fobj F (fobj G a))) ).
+           ++ cbn in *.
+              destruct A1, unit0, counit0. cbn in *.
+              rewrite <- assoc, <- preserve_comp.
+              rewrite <- comm_diag0.
+              rewrite preserve_comp. clear M EMC FT GT A2 CM.
+              rewrite <- ob4. rewrite !assoc. apply rcancel.
+              rewrite <- !assoc.
+              assert (fmap G (trans0 a) = fmap G (trans0 a) o identity (fobj G (fobj F (fobj G a)))).
+              { now rewrite f_identity. }
+              symmetry. rewrite H. apply lcancel.
+              now rewrite <- ob4.
+           ++ admit.
+       - intros. cbn in *. 
+         + unshelve econstructor.
+           ++ cbn in *. exact (fmap G f).
+           ++ cbn in *. admit.
+       - repeat intro.
+         now subst.
+       - intro a. cbn in *.
+         admit.
+       - intros. cbn in *.
+         admit.
+Admitted.
 
 Definition duL: forall
                  {C D   : Category}
@@ -1026,71 +1117,6 @@ Proof. intros C D F G A1 cM M CD FD GD A2. simpl in *.
 Defined.
 Check duL.
 
-(*
-Definition lAdjUnique: forall
-               {C D   : Category}
-               (a b   : @obj C)
-               (F     : Functor C D)
-               (G     : Functor D C) 
-               (A1    : Adjunction F G),
-               let M  := (adj_mon F G A1) in
-               let CM := (adj_comon F G A1) in
-               let CT := (Kleisli_Category C (Compose_Functors F G) M) in
-               let FT := (LA F G M) in
-               let GT := (RA F G M) in
-               let A2 := (mon_kladj F G M) in
-  forall f: arrow b a, exists !f': arrow (fobj FT b) (fobj FT a), JMeq (fmap GT f' o trans (@unit _ _ FT GT A2) a) f.
-Proof. intros. cbn in *. unfold id in *.
-       destruct FT, GT, A2, unit, counit. cbn in *.
-       unfold id in *. exists (trans b o f).
-       unfold unique. split.
-       rewrite preserve_comp.
-       apply eq_dep_id_JMeq.
-       apply EqdepFacts.eq_sigT_iff_eq_dep.
-       apply EqdepFacts.eq_sigT_sig_eq.
-       SearchAbout existT.
-       cbn.
-
-
-Lemma lAdjUnique:forall
-                  {C D   : Category}
-                  (a b   : @obj C)
-                  (F     : Functor C D)
-                  (G     : Functor D C)
-                  (A     : Adjunction F G),
-  forall f: arrow b a, exists !f': arrow (fobj F b) (fobj F a), JMeq (fmap G f' o trans (@unit _ _ F G A) a) f.
-Proof. intros. exists (fmap F f).
-       unfold unique. split.
-       destruct A, G, F, unit0, counit0. cbn in *.
-       unfold id in *. apply eq_dep_id_JMeq.
-       apply EqdepFacts.eq_sigT_iff_eq_dep.
-       apply EqdepFacts.eq_sigT_sig_eq.
-       SearchAbout existT.
-       cbn.
-
- SearchAbout EqdepFacts.eq_dep.
-       SearchAbout JMeq.
-*)
-
-(*
-Lemma uniqueduL: forall
-                 {C D: Category}
-                 (F: Functor D C)
-                 (G: Functor C D)
-                 (A1: Adjunction F G),
-                 let cM := (adj_comon F G A1) in
-                 let  M := (adj_mon   F G A1) in
-                 let CD := (coKleisli_Category C (Compose_Functors G F) cM) in
-                 let FD := (cLA F G cM) in
-                 let GD := (cRA F G cM) in
-                 let A2 := (comon_cokladj F G cM) in
-                 unique
-                    (fun L0 : CD → D =>
-                     Compose_Functors GD L0 = G /\ Compose_Functors L0 F = FD) 
-                    (L F G A1).
-Proof. Admitted.
-*)
-
 Class MapOfAdjunctions {X A X' A': Category} 
   (F : Functor X A)    (G : Functor A X)
   (F': Functor X' A')  (G': Functor A' X')
@@ -1111,8 +1137,8 @@ Lemma moaL: forall
                  (A1: Adjunction F G),
                  let  M := (adj_mon   F G A1) in
                  let CT := (Kleisli_Category C (Compose_Functors F G) M) in
-                 let FT := (LA F G M) in
-                 let GT := (RA F G M) in 
+                 let FT := (FT F G M) in
+                 let GT := (GT F G M) in 
                  let A2 := (mon_kladj F G M) in MapOfAdjunctions FT GT F G A2 A1.
 Proof. intros.
        unshelve econstructor.

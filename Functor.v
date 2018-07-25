@@ -46,8 +46,7 @@ Proof. refine (@mk_Functor C C id (fun a b f => f) _ _ _);
        intros; now unfold id.
 Defined.
 
-
-(** Equivalence of Functors, inspired by Amin Timany *)
+(** sameness of Functors, inspired by Amin Timany *)
 Lemma F_split: forall
                (C D  : Category)
                (F G  : Functor C D)
@@ -76,6 +75,16 @@ Proof.
     now destruct (proof_irrelevance _ preserve_comp0 preserve_comp1).
 Defined.
 
+Lemma FunctorCompositionAssoc: forall {D C B A : Category} 
+  (F : Functor C D) (G : Functor B C) (H : Functor A B),
+  Compose_Functors H (Compose_Functors G F) = Compose_Functors (Compose_Functors H G) F.
+Proof. intros.
+       assert (fobj (Compose_Functors H (Compose_Functors G F)) = fobj (Compose_Functors (Compose_Functors H G) F)).
+       { cbn. easy. }
+       specialize (F_split2 _ _ _ _ H0); intros.
+       apply H1. cbn. easy.
+Defined.
+
 Lemma ComposeIdr: forall {C D: Category} (F: Functor C D),
   Compose_Functors F IdFunctor = F.
 Proof. intros.
@@ -89,7 +98,7 @@ Proof. intros.
        { specialize (UIP_refl _   (fun a : @obj C => fobj F a)); intros.
          now specialize (H0 H).
        } now subst.
-Qed.
+Defined.
 
 
 Lemma ComposeIdl: forall {C D: Category} (F: Functor C D),
@@ -105,7 +114,7 @@ Proof. intros.
        { specialize (UIP_refl _   (fun a : @obj C => fobj F a)); intros.
          now specialize (H0 H).
        } now subst.
-Qed.
+Defined.
 
 Notation " C → D " := (Functor C D) (at level 40, left associativity).
 
@@ -270,20 +279,19 @@ Defined.
 
 (** State functor. *)
 
-Definition State (s a : Type) := s -> (a * s).
+Definition fobjFs (s a : Type) := s -> (a * s).
 
-Definition fmapFs (s A B: Type) (f: A -> B) (x : State s A) :=
+Definition fmapFs (s A B: Type) (f: A -> B) (x : fobjFs s A) :=
   fun st =>
     match x st with
-      | (a,st') => (f a, st')
+      | (a, st') => (f a, st')
     end.
 
 Definition Fs: forall (s: @obj CoqCatT), Functor CoqCatT CoqCatT.
-Proof. intros.
+Proof. intro s.
        unshelve econstructor.
-       - intros a. exact (State s a).
-       - intros. cbn in *. intros.
-         exact (fmapFs s a b f X).
+       - intros a. exact (fobjFs s a).
+       - intros a b f. exact (fmapFs s a b f).
        - repeat intro. now subst.
        - intros. cbn in *.
          extensionality X. compute.
@@ -293,8 +301,9 @@ Proof. intros.
          extensionality st. now destruct X.
 Defined.
 
-
 (** Two adjoint functors Fp and Gp over Prop forming an adjunction *)
+
+Definition fobjFp (p q: Prop) := p /\ q.
 
 Definition fmapFp (p a b : Prop) (f: a -> b) (H: p /\ a): p /\ b :=
   match H with
@@ -303,30 +312,23 @@ Definition fmapFp (p a b : Prop) (f: a -> b) (H: p /\ a): p /\ b :=
 
 Definition Fp: forall (p: @obj CoqCatP), Functor CoqCatP CoqCatP.
 Proof. unshelve econstructor.
-       - intro q. exact (p /\ q).
-       - intros. cbn in *. intros. exact (fmapFp p a b f H).
+       - intro q. exact (fobjFp p q).
+       - intros a b f. exact (fmapFp p a b f).
        - repeat intro. now subst.
        - intros. cbn in *. extensionality H. destruct H. easy.
        - intros. cbn in *. extensionality H. destruct H. easy.
 Defined.
+
+Definition fobjGp (p q: Prop) := p -> q.
 
 Definition fmapGp (p a b : Prop) (f: a -> b) (H: p -> a): p -> b :=
   fun x: p => f (H x).
 
 Definition Gp: forall (p: @obj CoqCatP), Functor CoqCatP CoqCatP.
 Proof. unshelve econstructor.
-       - intro q. exact (p -> q).
-       - intros. cbn in *. intros. exact (fmapGp p a b f H H0).
+       - intro q. exact (fobjGp p q).
+       - intros a b f. exact (fmapGp p a b f).
        - repeat intro. now subst.
        - intros. cbn in *. extensionality H. easy.
        - intros. cbn in *. extensionality H. easy.
 Defined.
-
-Definition Eta (p a: Prop) (H: id a) (H1: p): p /\ a.
-Proof. exact (conj H1 H). Defined.
-
-Definition Eps (p a: Prop) (H: p /\ (p -> a)): id a :=
-  match H with
-    | conj x y => y x
-  end.
-

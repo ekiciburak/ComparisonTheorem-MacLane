@@ -8,7 +8,6 @@ Arguments trans {_} {_} {_} {_} _ _.
 Arguments Compose_NaturalTransformations {_ _ _ _ _ } _ _.
 Arguments Compose_NaturalTransformations_H {_ _ _ _ _ } _ _.
 
-
 Lemma L_functor: forall
                {C D   : Category}
                (F     : Functor C D)
@@ -16,8 +15,8 @@ Lemma L_functor: forall
                (A1    : Adjunction F G),
                let M  := (@adj_mon   C D F G A1) in
                let CT := (Kleisli_Category C (Compose_Functors F G) M) in
-               let FT := (LA F G M) in
-               let GT := (RA F G M) in
+               let FT := (FT F G M) in
+               let GT := (GT F G M) in
                let A2 := (mon_kladj F G M) in
                  (Compose_Functors FT (L F G A1)) = F /\ (Compose_Functors (L F G A1) G) = GT.
 Proof. intros C D F G A1 M CT FT GT A2.
@@ -82,8 +81,8 @@ Lemma uniqueL: forall
                    (A1: Adjunction F G),
                    let  M := (adj_mon   F G A1) in
                    let CT := (Kleisli_Category C (Compose_Functors F G) M) in
-                   let FT := (LA F G M) in
-                   let GT := (RA F G M) in
+                   let FT := (FT F G M) in
+                   let GT := (GT F G M) in
                    let A2 := (mon_kladj F G M) in
                    unique
                       (fun L0 : CT → D =>
@@ -149,7 +148,7 @@ Proof. intros.
        unfold M in *.
        destruct M, unit, counit0, unit0. cbn in *. unfold id in *.
        assert (Functor.fmap G (fmap a b f) = Functor.fmap GT f).
-       { unfold Compose_Functors, GT, RA, adj_mon in Hb. cbn in Hb. 
+       { unfold Compose_Functors, GT, adj_mon in Hb. cbn in Hb. 
          inversion Hb. cbn.
          apply inj_pair2 in H5.
          pose proof (fun x y z => eq_ind_r (fun f => f x y z = _ x y z) eq_refl H5) as H5';
@@ -171,8 +170,8 @@ Theorem ComparisonMacLane: forall
                (A1    : Adjunction F G),
                let M  := (@adj_mon   C D F G A1) in
                let CT := (Kleisli_Category C (Compose_Functors F G) M) in
-               let FT := (LA F G M) in
-               let GT := (RA F G M) in
+               let FT := (FT F G M) in
+               let GT := (GT F G M) in
                let A2 := (mon_kladj F G M) in
                exists !L, (Compose_Functors FT L) = F /\ (Compose_Functors L G) = GT.
 Proof. intros C D F G A1 M CT FT GT A2.
@@ -322,7 +321,7 @@ Proof. intros.
        unfold cM in *.
        destruct cM, unit, counit, unit0. cbn in *. unfold id in *.
        assert (Functor.fmap F (fmap a b f) = Functor.fmap FD f).
-       { unfold Compose_Functors, GD, RA, adj_mon in Hb. cbn in Hb. 
+       { unfold Compose_Functors, GD, adj_mon in Hb. cbn in Hb. 
          inversion Hb. cbn.
          apply inj_pair2 in H5. unfold id in *.
          pose proof (fun x y z => eq_ind_r (fun f => f x y z = _ x y z) eq_refl H5) as H5';
@@ -352,3 +351,17 @@ Proof. intros C D F G A1 M CT FT GT A2.
        exists (duL F G A1). apply uniqueduL.
 Qed.
 Check duaLComparisonMacLane.
+
+(*
+Lemma K_functor: forall
+               {C D    : Category}
+               (F      : Functor C D)
+               (G      : Functor D C) 
+               (A1     : Adjunction F G),
+               let M   := (@adj_mon   C D F G A1) in
+               let EMC := (EilenbergMooreCategory C (Compose_Functors F G) M) in
+               let FT  := (LAEM F G M) in
+               let GT  := (RAEM F G M) in
+               let A2  := (mon_emadj F G M) in
+                 (Compose_Functors FT (K F G A1)) = F /\ (Compose_Functors (K F G A1) G) = GT.
+*)

@@ -16,6 +16,21 @@ Class Category: Type :=
 
 Notation " g 'o' f " := (@comp _ _ _ _ g f) (at level 40, left associativity).
 
+(** sameness of categories *)
+Lemma C_split: forall C D: Category,
+               @obj C = @obj D ->
+               JMeq (@arrow C) (@arrow D) -> 
+               JMeq (@identity C) (@identity D) ->
+               JMeq (@comp C) (@comp D) -> C = D.
+Proof. intros C D H0 H1 H2 H3.
+       destruct C, D. cbn in *. subst.
+       apply JMeq_eq in H1. subst. apply JMeq_eq in H2. subst. f_equal.
+       now destruct (proof_irrelevance _ compose_respects0 compose_respects1).
+       now destruct (proof_irrelevance _ assoc0 assoc1).
+       now destruct (proof_irrelevance _ identity_f0 identity_f1).
+       now destruct (proof_irrelevance _ f_identity0 f_identity1).
+Defined.
+
 Class SubCategory (C: Category): Type :=
   mk_SubCategory
   {
@@ -27,7 +42,6 @@ Class SubCategory (C: Category): Type :=
                          s_arrow a b sa sb g -> s_arrow b c sb sc f ->
                          s_arrow a c sa sc (g o f) 
   }.
-
 
 Definition Product_Category (C D: Category) : Category.
 Proof.
@@ -73,3 +87,4 @@ Notation CoqCat U :=
 Program Definition CoqCatT: Category := CoqCat Type.
 Program Definition CoqCatS: Category := CoqCat Set.
 Program Definition CoqCatP: Category := CoqCat Prop.
+

@@ -129,6 +129,79 @@ Proof.
          now rewrite preserve_id, f_identity.
 Defined.
 
+Definition Cat: Category.
+Proof. unshelve econstructor.
+       - exact Category.
+       - intros C D. exact (Functor C D).
+       - intro C. exact (@Id C).
+       - intros E D C F G. exact (Compose_Functors F G).
+       - repeat intro. now subst.
+       - intros D C B A F G H. exact (FunctorCompositionAssoc F G H).
+       - intros D C F. exact (ComposeIdl F).
+       - intros D C F. exact (ComposeIdr F).
+Defined.
+
+Class IsomorphismFunctorial {C D: Category} : Type := {
+  toC   : Functor C D;
+  fromC : Functor D C;
+
+  iso_to_fromC : Compose_Functors toC fromC = @Id C;
+  iso_from_toD : Compose_Functors fromC toC = @Id D
+}.
+
+Class IsomorphismNT {C D: Category} (F G: Functor C D): Type :=
+  mk_IsomorphisnNT
+  {
+     nt1        : NaturalTransformation F G;
+     nt2        : NaturalTransformation G F;
+     equivnt_ob1: Compose_NaturalTransformations nt1 nt2 = IdNt C D F;
+     equivnt_ob2: Compose_NaturalTransformations nt2 nt1 = IdNt C D G
+  }.
+
+Lemma eqIso1: forall (C D: @obj Cat), @Isomorphism Cat C D -> @IsomorphismFunctorial C D.
+Proof. intros C D I; destruct I; cbn in *.
+       unshelve econstructor.
+       - exact iso_from_to.
+       - exact iso_to_from.
+Qed.
+
+Lemma eqIso2: forall (C D: @obj Cat), @IsomorphismFunctorial C D -> @Isomorphism Cat C D.
+Proof. intros C D I.
+       unshelve econstructor; destruct I; cbn in *.
+       - exact fromC0.
+       - exact toC0.
+       - exact iso_from_toD0.
+       - exact iso_to_fromC0.
+Qed.
+
+Lemma eqIso3: forall C D (F G: Functor C D), 
+                         @Isomorphism (FunctorCategory C D) F G ->
+                         @IsomorphismNT C D F G.
+Proof. intros C D F G E.
+       destruct E; cbn in *.
+       - unshelve econstructor.
+         + exact iso_from_to.
+         + exact iso_to_from.
+Qed.
+
+Lemma eqIso4: forall C D (F G: Functor C D),
+                         @IsomorphismNT C D F G ->
+                         @Isomorphism (FunctorCategory C D) F G.
+Proof. intros C D F G I.
+       destruct I; unshelve econstructor; cbn in *.
+       - exact nt3.
+       - exact nt4.
+       - exact equivnt_ob4.
+       - exact equivnt_ob3.
+Qed.
+
+Class EquivalenceCat {C D: Category} (F: Functor C D) (G: Functor D C): Type :=
+  mk_EquivalenceCat
+  {
+     equiv_ob1: @Isomorphism (FunctorCategory C C) (Compose_Functors F G) (@Id C);
+     equiv_ob2: @Isomorphism (FunctorCategory D D) (Compose_Functors G F) (@Id D)
+  }.
+
 (*
 Definition CurryingFunctor (C D E: Category) (F: Functor (Product_Category C D) E):
   Functor C (FunctorCategory D E).

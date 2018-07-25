@@ -218,7 +218,7 @@ Defined.
 Check EilenbergMooreCategory.
 
 (** left adjoint functor that acts as F_T *)
-Definition LA {C D: Category}
+Definition FT {C D: Category}
               (F  : Functor C D)
               (G  : Functor D C)
               (T  := Compose_Functors F G)
@@ -235,10 +235,10 @@ Proof. destruct M, T, eta0.
          rewrite assoc. rewrite comm_diagram2_b3.
          rewrite <- comm_diag. now rewrite identity_f.
 Defined.
-Check LA.
+Check FT.
 
 (** right adjoint functor that acts as G_T *)
-Definition RA {C D: Category}
+Definition GT {C D: Category}
               (F  : Functor C D)
               (G  : Functor D C)
               (T  := Compose_Functors F G)
@@ -262,7 +262,7 @@ Proof. destruct M, mu0.
          repeat rewrite <- assoc.
          now rewrite comm_diag.
 Defined.
-Check RA.
+Check GT.
 
 Definition LAEM {C D: Category}
                 (F  : Functor C D)
@@ -366,48 +366,56 @@ Proof. destruct cM, eps0.
 Defined.
 Check cRA.
 
+Definition EtaFs: forall (s: @obj CoqCatT), NaturalTransformation Id (Fs s).
+Proof. intro s.
+       unshelve econstructor.
+       + cbn. intros a v.
+         exact (fun st: s => (v, st)).
+       + cbn. intros a b f.
+         extensionality v. easy.
+       + cbn. intros a b f.
+         extensionality v. easy.
+Defined.
+
+Definition MuFs: forall (s: @obj CoqCatT),
+  NaturalTransformation (Compose_Functors (Fs s) (Fs s)) (Fs s).
+Proof. intro s.
+       unshelve econstructor.
+       + cbn. intros a H st.
+         destruct H as (f & st').
+         exact st. exact (f st').
+       + cbn. intros a b f.
+         extensionality g. compute.
+         extensionality st.
+         destruct g. easy.
+       + cbn. intros a b f.
+         extensionality g. compute.
+         extensionality st.
+         destruct g. easy.
+Defined.
 
 (** State monad *)
 Definition Ms: forall (s: @obj CoqCatT), Monad CoqCatT (Fs s).
-Proof. intros.
+Proof. intro s.
        unshelve econstructor.
-       - unshelve econstructor.
-         + intros. cbn in *. intros.
-           unfold State. intros. easy.
-         + intros. cbn in *. 
-           extensionality a0. compute. 
-           extensionality st. easy.
-         + intros. cbn.
-           extensionality a0. compute. 
-           extensionality st. easy.
-       - unshelve econstructor.
-         + intros. cbn in *. intros.
-           unfold State in *. intros.
-           destruct X. easy. now apply p.
-         + intros. cbn.
-           extensionality a0. compute. 
-           extensionality st.
-           destruct a0. easy.
-         + intros. cbn.
-           extensionality a0. compute. 
-           extensionality st.
-           destruct a0. easy.
-       - intros. cbn in *.
-         extensionality a0. compute. 
+       - exact (EtaFs s).
+       - exact (MuFs  s).
+       - cbn. intro a.
+         extensionality f. compute.
          extensionality st.
-         destruct a0. easy.
-       - intros. cbn in *.
-         extensionality a0. compute. 
+         destruct f. easy.
+       - cbn. intro a.
+         extensionality f. compute.
          extensionality st.
-         destruct a0. easy.
-       - intros. cbn in *.
-         extensionality a0. compute. 
+         destruct f. easy.
+       - cbn. intro a.
+         extensionality f. compute.
          extensionality st.
-         destruct a0. easy.
-       - intros. cbn in *.
-         extensionality a0. compute. 
+         destruct f. easy.
+       - cbn. intro a.
+         extensionality f. compute.
          extensionality st.
-         destruct a0. easy.
+         destruct f. easy.
 Defined.
 
 
