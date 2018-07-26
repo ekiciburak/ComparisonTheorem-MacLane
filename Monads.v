@@ -153,6 +153,22 @@ Proof. intros.
        easy.
 Qed.
 
+(** eqTA with JMeq *)
+Lemma eqTA2: forall
+                  (C      : Category)
+                  (T      : Functor C C)
+                  (M      : Monad C T)
+                  (TA1 TA2: TAlgebra C T M),
+                  (@alg_obj C T M TA1) = (@alg_obj C T M TA2) ->
+                  JMeq (@alg_map C T M TA1) (@alg_map C T M TA2) -> TA1 = TA2.
+Proof. intros.
+       destruct TA1, TA2. cbn in *. subst.
+       apply JMeq_eq in H0. subst. f_equal. intros. subst.
+       easy.
+       now destruct (proof_irrelevance _ alg_id0 alg_id1).
+       now destruct (proof_irrelevance _ alg_act0 alg_act1).
+Qed.
+
 Class TAlgebraMap (C      : Category)
                   (T      : (@Functor C C))
                   (M      : Monad C T)
@@ -270,28 +286,31 @@ Definition LAEM {C D: Category}
                 (T  := Compose_Functors F G)
                 (M  : Monad C T)
                 (EMC:= (EilenbergMooreCategory C T M)): Functor C EMC.
-Proof. destruct M, T, eta0, mu0. cbn in *.
+Proof. 
        unshelve econstructor.
        - intros. cbn in *.
          unshelve econstructor.
-         + exact (fobj X).
-         + cbn in *. exact (trans0 X).
+         + exact (fobj T X).
+         + cbn in *. destruct M. 
+           exact (trans mu0 X).
          + cbn in *. clear EMC.
+           destruct M. cbn in *.
            now specialize (comm_diagram2_b4 X).
-         + cbn in *.
+         + destruct M. cbn in *.
            now rewrite comm_diagram3.
        - intros. cbn in *.
          unshelve econstructor.
-         + cbn in *. exact (fmap _ _ f).
-         + cbn in *.
+         + cbn in *. exact (fmap T f).
+         + destruct M. cbn in *.
+           destruct eta0, mu0. cbn in *.
            now rewrite comm_diag0.
        - repeat intro. now subst.
        - intros. cbn in *.
          apply eqTAM. cbn.
-         now rewrite preserve_id.
+         now rewrite !preserve_id.
        - intros. cbn in *.
          apply eqTAM. cbn.
-         now rewrite preserve_comp.
+         now rewrite !preserve_comp.
 Defined.
 Check LAEM.
 
@@ -302,8 +321,7 @@ Definition RAEM {C D: Category}
                 (T  := Compose_Functors F G)
                 (M  : Monad C T)
                 (EMC:= (EilenbergMooreCategory C T M)): Functor EMC C.
-Proof. destruct M, T, eta0, mu0. cbn in *.
-       unshelve econstructor.
+Proof. unshelve econstructor.
        - intros. cbn in *.
          destruct X. exact alg_obj0.
        - intros. cbn in *.

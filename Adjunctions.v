@@ -1017,17 +1017,14 @@ Proof. intros. cbn in *.
 Defined.
 Check L.
 
-Definition K: forall
+Definition invK: forall
                {C D   : Category}
                (F     : Functor C D)
                (G     : Functor D C) 
                (A1    : Adjunction F G),
                let M  := (adj_mon F G A1) in
                let CM := (adj_comon F G A1) in
-               let EMC:= (EilenbergMooreCategory C (Compose_Functors F G) M) in
-               let FT := (FT F G M) in
-               let GT := (GT F G M) in
-               let A2 := (mon_emadj F G M) in Functor EMC D.
+               let EMC:= (EilenbergMooreCategory C (Compose_Functors F G) M) in Functor EMC D.
 Proof. intros.
        unshelve econstructor.
        - intro a. cbn in *.
@@ -1038,19 +1035,58 @@ Proof. intros.
        - intros. cbn in *. now rewrite preserve_id.
        - intros. cbn in *. now rewrite preserve_comp.
 Defined.
-Check K.
+Check invK.
 
-Definition invK: forall
+Definition K: forall
                {C D   : Category}
                (F     : Functor C D)
                (G     : Functor D C) 
                (A1    : Adjunction F G),
                let M  := (adj_mon F G A1) in
-               let CM := (adj_comon F G A1) in
-               let EMC:= (EilenbergMooreCategory C (Compose_Functors F G) M) in
-               let FT := (FT F G M) in
-               let GT := (GT F G M) in
-               let A2 := (mon_emadj F G M) in Functor D EMC.
+               let EMC:= (EilenbergMooreCategory C (Compose_Functors F G) M) in Functor D EMC.
+Proof. intros.
+       unshelve econstructor.
+       - intro a. cbn in *.
+         + unshelve econstructor.
+           ++ exact (fobj G a).
+           ++ cbn in *. destruct A1, unit0, counit0. cbn in *.
+              unfold id in *.
+              exact (fmap G (trans0 a)).
+           ++ cbn in *.
+              destruct A1, unit0, counit0. cbn in *.
+              now rewrite ob4.
+           ++ cbn in *.
+              destruct A1, unit0, counit0. cbn in *.
+              rewrite <- !preserve_comp.
+              now rewrite <- comm_diag0.
+       - intros. cbn in *. 
+         + unshelve econstructor.
+           ++ cbn in *. exact (fmap G f).
+           ++ cbn in *.
+              destruct A1, unit0, counit0. cbn in *.
+              rewrite <- preserve_comp.
+              rewrite <- comm_diag0.
+              now rewrite preserve_comp.
+       - repeat intro.
+         now subst.
+       - intro a. cbn in.
+         apply eqTAM. cbn in *.
+         now rewrite preserve_id.
+       - intros a b c g f.
+         apply eqTAM.
+         cbn in *.
+         now rewrite preserve_comp.
+Defined. 
+Check K.
+
+(*
+Definition K: forall
+               {C D   : Category}
+               (F     : Functor C D)
+               (G     : Functor D C) 
+               (A1    : Adjunction F G),
+               let M  := (adj_mon F G A1) in
+               let EMC:= (EilenbergMooreCategory C (Compose_Functors F G) M) in Functor D EMC.
 Proof. intros.
        unshelve econstructor.
        - intro a. cbn in *.
@@ -1064,7 +1100,7 @@ Proof. intros.
               destruct A1, unit0, counit0. cbn in *.
               rewrite <- assoc, <- preserve_comp.
               rewrite <- comm_diag0.
-              rewrite preserve_comp. clear M EMC FT GT A2 CM.
+              rewrite preserve_comp.
               rewrite <- ob4. rewrite !assoc. apply rcancel.
               rewrite <- !assoc.
               assert (fmap G (trans0 a) = fmap G (trans0 a) o identity (fobj G (fobj F (fobj G a)))).
@@ -1113,14 +1149,66 @@ Proof. intros.
        - intros. cbn in *. 
          + unshelve econstructor.
            ++ cbn in *. exact (fmap G f).
-           ++ cbn in *. admit.
+           ++ cbn in *.
+              destruct A1, unit0, counit0. cbn in *.
+              remember compose_respects.
+              remember fmapP.
+              rewrite !assoc.
+              rewrite <- preserve_comp.
+              rewrite <- comm_diag0.
+              rewrite preserve_comp.
+              repeat setoid_rewrite <- assoc at 1.
+              setoid_rewrite assoc at 2.
+              setoid_rewrite assoc at 1.
+              symmetry.
+              remember compose_respects.
+              repeat setoid_rewrite <- assoc at 1.
+              setoid_rewrite assoc at 2.
+              setoid_rewrite assoc at 1.
+              rewrite <- preserve_comp.
+              rewrite <- comm_diag0.
+              rewrite preserve_comp.
+              rewrite assoc.
+              repeat setoid_rewrite <- assoc at 1.
+              setoid_rewrite assoc at 1.
+              assert (fmap G f o fmap G (trans0 a) o 
+              (fmap G (trans0 (fobj F (fobj G a))) o 
+              trans (fobj G (fobj F (fobj G a)))) = 
+              fmap G f o fmap G (trans0 a)
+              ).
+              { rewrite ob4. now rewrite f_identity. }
+              assert (
+              fmap G (trans0 b) o (fmap G (trans0 (fobj F (fobj G b))) o 
+              (trans (fobj G (fobj F (fobj G b))) o 
+              fmap G (fmap F (fmap G f)))) =
+              fmap G (trans0 b) o fmap G (fmap F (fmap G f))).
+              { repeat setoid_rewrite <- assoc at 1.
+                apply lcancel.
+                rewrite assoc.
+                rewrite ob4.
+                now rewrite identity_f.
+              }
+              assert (fmap G f o fmap G (trans0 a)= 
+              fmap G (trans0 b) o fmap G (fmap F (fmap G f))).
+              { rewrite <- !preserve_comp.
+                apply f_equal. 
+                apply comm_diag0.
+              }
+              rewrite <- H1 in H0.
+              rewrite <- H in H0.
+              easy.
        - repeat intro.
          now subst.
-       - intro a. cbn in *.
-         admit.
-       - intros. cbn in *.
-         admit.
-Admitted.
+       - intro a. cbn in.
+         apply eqTAM. cbn in *.
+         now rewrite preserve_id.
+       - intros a b c g f.
+         apply eqTAM.
+         cbn in *.
+         now rewrite preserve_comp.
+Defined. (** takes time: ~ 22 secs *)
+Check K.
+*)
 
 Definition duL: forall
                  {C D   : Category}

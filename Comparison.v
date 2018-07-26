@@ -8,6 +8,80 @@ Arguments trans {_} {_} {_} {_} _ _.
 Arguments Compose_NaturalTransformations {_ _ _ _ _ } _ _.
 Arguments Compose_NaturalTransformations_H {_ _ _ _ _ } _ _.
 
+
+Lemma K_functor: forall
+               {C D   : Category}
+               (F     : Functor C D)
+               (G     : Functor D C) 
+               (A1    : Adjunction F G),
+               let M  := (adj_mon F G A1) in
+               let EMC:= (EilenbergMooreCategory C (Compose_Functors F G) M) in
+               let FT := (LAEM F G M) in
+               let GT := (RAEM F G M) in
+               let A2 := (mon_emadj F G M) in 
+                 (Compose_Functors (K F G A1) GT) = G /\ (Compose_Functors F (K F G A1)) = FT.
+Proof. intros C D F G A1 M EMC FT GT A2.
+       split.  cbn in *.
+
+       assert (fobj (Compose_Functors (K F G A1) GT) = fobj G).
+       { 
+           unfold Compose_Functors. simpl in *.
+           unfold id in *. easy.
+       }
+       simpl.
+       apply F_split2. easy.
+       apply eq_dep_id_JMeq. cbn in *.
+       apply EqdepFacts.eq_sigT_iff_eq_dep. cbn in *.
+       apply eq_existT_uncurried.
+       assert ((forall a b : obj, arrow b a -> arrow (fobj G b) (fobj G a)) =
+               (forall a b : obj, arrow b a -> arrow (fobj G b) (fobj G a))).
+       { easy. }
+       exists H0.
+       unfold eq_rect.
+       assert (H0 = eq_refl) by admit.
+       rewrite H1. easy.
+
+       assert (fobj (Compose_Functors F (K F G A1)) = fobj FT).
+       { 
+           simpl in *.
+           unfold id in *. extensionality a.
+           apply eqTA2. cbn in *.
+           easy. 
+           cbn in *.
+           apply eq_dep_id_JMeq. cbn in *.
+           apply EqdepFacts.eq_sigT_iff_eq_dep. cbn in *.
+           apply eq_existT_uncurried.
+           assert (arrow (fobj G (fobj F a)) (fobj G (fobj F (fobj G (fobj F a)))) =
+                   arrow (fobj G (fobj F a)) (fobj G (fobj F (fobj G (fobj F a))))).
+           { easy. }
+           exists H.
+           unfold eq_rect.
+           assert (H = eq_refl) by admit.
+           rewrite H0. easy.
+       }
+       simpl.
+       apply F_split2. easy.
+       apply eq_dep_id_JMeq.
+       apply EqdepFacts.eq_sigT_iff_eq_dep. 
+       apply eq_existT_uncurried.
+       assert ((forall a b : obj,
+               arrow b a -> arrow (fobj (Compose_Functors F (K F G A1)) b) (fobj (Compose_Functors F (K F G A1)) a)) =
+              (forall a b : obj, arrow b a -> arrow (fobj FT b) (fobj FT a))).
+       { rewrite H. easy. }
+       exists H0.
+       unfold eq_rect.
+       destruct FT. cbn in *. subst.
+       assert (H0 = eq_refl) by admit.
+       rewrite H.
+       extensionality a. extensionality b.
+       extensionality f. f_equal.
+       cbn in *.
+       clear H0 H. destruct fmap.
+       cbn in *.
+       apply eqTAM. cbn.
+Admitted.
+
+
 Lemma L_functor: forall
                {C D   : Category}
                (F     : Functor C D)
