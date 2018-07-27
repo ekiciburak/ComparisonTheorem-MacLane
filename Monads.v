@@ -6,8 +6,6 @@ Arguments Compose_Functors {_} {_} {_} _ _.
 Arguments NaturalTransformation {_} {_} _ _.
 Arguments trans {_} {_} {_} {_} _ _.
 
-Check fmap.
-
 Class Monad (C: Category) 
             (T: Functor C C): Type :=
   mk_Monad
@@ -29,6 +27,21 @@ Class Monad (C: Category)
   }.
 Check Monad.
 
+Class MonadTransformer (C : Category) 
+                       (F : Functor C C)
+                       (M1: Monad C F)
+                       (Tr: (Functor C C) -> (Functor C C))
+                       (M2: Monad C (Tr F)): Type :=
+  mk_MonadTransformer
+  {
+     lift: forall a: @obj C, arrow (fobj (Tr F) a) (fobj F a);
+     lob1: forall a: @obj C, lift a o (trans (@eta C F M1) a) = (trans (@eta C (Tr F) M2) a);
+     lob2: forall (a b: @obj C) (f: arrow (fobj F b) a),
+           lift b o (trans (@mu C F M1) b) o (fmap F f) = (trans (@mu C (Tr F) M2) b) o fmap (Tr F) (lift b o f) o lift a
+  }.
+Check MonadTransformer.
+
+Arguments MonadTransformer {_ _} _ {_} _.
 
 Class coMonad (C: Category) 
               (D: Functor C C): Type :=
@@ -286,16 +299,15 @@ Definition LAEM {C D: Category}
                 (T  := Compose_Functors F G)
                 (M  : Monad C T)
                 (EMC:= (EilenbergMooreCategory C T M)): Functor C EMC.
-Proof. 
-       unshelve econstructor.
-       - intros. cbn in *.
+Proof. unshelve econstructor.
+       - intro a. cbn in *.
          unshelve econstructor.
-         + exact (fobj T X).
-         + cbn in *. destruct M. 
-           exact (trans mu0 X).
+         + exact (fobj T a).
+         + cbn in *.
+           exact (trans (@mu _ _ M) a).
          + cbn in *. clear EMC.
            destruct M. cbn in *.
-           now specialize (comm_diagram2_b4 X).
+           now specialize (comm_diagram2_b4 a).
          + destruct M. cbn in *.
            now rewrite comm_diagram3.
        - intros. cbn in *.
@@ -436,4 +448,53 @@ Proof. intro s.
          destruct f. easy.
 Defined.
 
+Definition EtaFm: NaturalTransformation Id FunctorM.
+Proof. unshelve econstructor.
+       - intro A. cbn in *.
+         intro a. exact (just A a).
+       - intros A B f. cbn. easy.
+       - intros A B f. cbn. easy.
+Defined.
+
+Definition fmapFM {A : Type} (i: maybe (maybe A)): maybe A :=
+  match i with
+    | just _ a => a
+    | nothing _ => nothing _
+  end.
+
+Definition MuFm: NaturalTransformation (Compose_Functors FunctorM FunctorM) (FunctorM).
+Proof. unshelve econstructor.
+       - intro A. cbn.
+         intro i. cbn in *.
+         exact (fmapFM i).
+       - intros A B f. cbv.
+         extensionality a.
+         case_eq a; intros.
+         case_eq m; intros.
+         easy. easy. easy.
+       - intros A B f. cbv.
+         extensionality a.
+         case_eq a; intros.
+         case_eq m; intros.
+         easy. easy. easy.
+Defined. 
+
+(** Maybe monad *)
+Definition Mm: Monad CoqCatT FunctorM.
+Proof. unshelve econstructor.
+       - exact EtaFm.
+       - exact MuFm.
+       - cbn. intro a. cbv.
+         extensionality b.
+         case_eq b; intros; try easy.
+       - intro a. cbv.
+         extensionality b.
+         case_eq b; intros; try easy.
+       - intro a. cbv.
+         extensionality b.
+         case_eq b; intros; try easy.
+       - intro a. cbv.
+         extensionality b.
+         case_eq b; intros; try easy.
+Defined.
 

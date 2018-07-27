@@ -277,6 +277,33 @@ Proof. unshelve econstructor.
          + cbn in *. now rewrite IHIHxl.
 Defined.
 
+(** Maybe functor *)
+Inductive maybe (A: Type) :=
+  | just   : A -> maybe A
+  | nothing: maybe A.
+
+
+Definition fmapMaybe {A B: Type} (f: A -> B) (i: maybe A): maybe B:=
+  match i with
+    | just _ a  => just _ (f a)
+    | nothing _ => nothing _
+  end.
+
+Definition FunctorM: Functor CoqCatT CoqCatT.
+Proof. unshelve econstructor.
+       - cbn. intro a. exact (maybe a).
+       - intros a b f. cbn. intro g.
+         cbn in *.
+         exact (fmapMaybe f g).
+       - repeat intro. now subst.
+       - intros. cbn in *.
+         extensionality b. compute.
+         case_eq b; intros; easy.
+       - cbn. intros.
+         extensionality h. cbv in *.
+         case_eq h; intros; easy.
+Defined.
+
 (** State functor. *)
 
 Definition fobjFs (s a : Type) := s -> (a * s).
