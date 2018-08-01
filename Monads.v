@@ -208,7 +208,6 @@ Proof. intros.
        easy.
 Qed.
 
-
 Definition EilenbergMooreCategory (C: Category) (T: Functor C C) (M: Monad C T): Category.
 Proof. unshelve econstructor.
        - exact (TAlgebra C T M).
@@ -233,18 +232,116 @@ Proof. unshelve econstructor.
            now rewrite assoc.
        - repeat intro. subst. easy.
        - cbn in *. intros.
-         destruct T, M, eta0, mu0,a, b, c, d, f, g, h. cbn in *.
          apply eqTAM. cbn in *. 
          now rewrite assoc.
        - cbn in *. intros.
          apply eqTAM. cbn.
-         destruct a, b, f. cbn in *.
          now rewrite identity_f.
       -  cbn in *. intros.
          apply eqTAM. cbn in *.
          now rewrite f_identity.
 Defined.
 Check EilenbergMooreCategory.
+
+(*
+Generalizable All Variables.
+Set Primitive Projections.
+Set Universe Polymorphism.
+Unset Transparent Obligations.
+
+
+Class TAlgebra (C: Category)
+               (T: Functor C C)
+               (M: Monad C T)
+               (a: @obj C) :=
+  {
+     alg_map: arrow a (fobj T a);
+     alg_id : alg_map o (trans eta a) = (@identity C a);
+     alg_act: alg_map o (fmap T (alg_map)) = alg_map o (trans mu a)
+  }.
+Check TAlgebra.
+
+(** eqTA with JMeq *)
+Lemma eqTA: forall
+                  (C      : Category)
+                  (T      : Functor C C)
+                  (M      : Monad C T)
+                  (a b    : @obj C)
+                  (TA1 TA2: TAlgebra C T M a),
+                  JMeq (@alg_map C T M a TA1) (@alg_map C T M a TA2) -> TA1 = TA2.
+Proof. intros.
+       destruct TA1, TA2. cbn in *. subst. f_equal.
+       intros. subst. easy.
+       now destruct (proof_irrelevance _ alg_id0 alg_id1).
+       now destruct (proof_irrelevance _ alg_act0 alg_act1).
+Qed.
+
+Class TAlgebraMap (C      : Category)
+                  (T      : (@Functor C C))
+                  (M      : Monad C T)
+                  (a b    : @obj C)
+                  (TA1    : TAlgebra C T M a) 
+                  (TA2    : TAlgebra C T M b) :=
+  {
+     tf  : @arrow C b a;
+     malg: (@alg_map C T M b TA2) o fmap T tf = tf o (@alg_map C T M a TA1)
+  }.
+Check TAlgebraMap.
+
+
+Lemma eqTAM: forall
+                  (C      : Category)
+                  (T      : Functor C C)
+                  (M      : Monad C T)
+                  (a b    : @obj C)
+                  (TA1    : TAlgebra C T M a) 
+                  (TA2    : TAlgebra C T M b)
+                  (ta1 ta2: TAlgebraMap C T M a b TA1 TA2)
+                  (mapEq  : (@tf C T M a b TA1 TA2 ta1) = (@tf C T M a b TA1 TA2 ta2)),
+                   ta1 = ta2.
+Proof. intros. 
+       destruct ta1, ta2, TA1, TA2, T, M. cbn in *.
+       subst.
+       destruct (proof_irrelevance _ malg0 malg1).
+       easy.
+Qed.
+
+
+Program Definition EilenbergMooreCategory (C: Category) {a: @obj C} (T: Functor C C) (M: Monad C T): Category.
+Proof. unshelve econstructor.
+       - exact (TAlgebra C T M a).
+       - intros TA1 TA2.
+         exact (TAlgebraMap C T M TA1 TA2).
+       - intros.
+         cbn in *.
+         unshelve econstructor.
+         + destruct a. cbn in *.
+           exact (identity (alg_obj0)).
+         + cbn in *. now rewrite !preserve_id, f_identity, identity_f.
+       - intros.
+         cbn in *.
+         unshelve econstructor.
+         + destruct a, b, c, X, X0. cbn in *.
+           exact (tf0 o tf1).
+         + cbn in *.
+           rewrite preserve_comp.
+           destruct T, M, eta0, mu0, a, b, c, X, X0. cbn in *.
+           rewrite assoc.
+           rewrite malg0. rewrite <- assoc. rewrite malg1.
+           now rewrite assoc.
+       - repeat intro. subst. easy.
+       - cbn in *. intros.
+         apply eqTAM. cbn in *. 
+         now rewrite assoc.
+       - cbn in *. intros.
+         apply eqTAM. cbn.
+         now rewrite identity_f.
+      -  cbn in *. intros.
+         apply eqTAM. cbn in *.
+         now rewrite f_identity.
+Defined.
+Check EilenbergMooreCategory.
+*)
 
 (** left adjoint functor that acts as F_T *)
 Definition FT {C D: Category}
@@ -253,16 +350,19 @@ Definition FT {C D: Category}
               (T  := Compose_Functors F G)
               (M  : Monad C T)
               (KC := (Kleisli_Category C T M)): Functor C KC.
-Proof. destruct M, T, eta0.
-       unshelve econstructor; simpl.
+Proof. destruct M as (eta, mu, cc1, cc2, cc3, cc4).
+       unshelve econstructor.
        - exact id.
-       - intros a b f. exact (trans b o f).
+       - intros a b f. exact (trans eta b o f).
        - repeat intro. subst. easy.
        - intros. simpl in *. rewrite f_identity. easy.
-       - intros. simpl in *. destruct mu0. unfold id in *. simpl in *.
-         rewrite preserve_comp. do 2 rewrite assoc.
-         rewrite assoc. rewrite comm_diagram2_b3.
-         rewrite <- comm_diag. now rewrite identity_f.
+       - intros. simpl in *. 
+         rewrite !preserve_comp.
+         do 3 rewrite assoc.
+         rewrite cc3.
+         rewrite identity_f.
+         destruct eta. cbn in *.
+         now rewrite comm_diag.
 Defined.
 Check FT.
 
@@ -273,21 +373,20 @@ Definition GT {C D: Category}
               (T  := Compose_Functors F G)
               (M  : Monad C T)
               (KC := (Kleisli_Category C T M)): Functor KC C.
-Proof. destruct M, mu0.
+Proof. destruct M as (eta, mu, cc1, cc2, cc3, cc4).
        unshelve econstructor; simpl.
        - exact (fobj T).
-       - intros a b f. exact (trans b o fmap T f).
+       - intros a b f. exact (trans mu b o fmap T f).
        - repeat intro. subst. easy.
        - intros. clear KC.
-         specialize (comm_diagram2_b3 a). easy.
+         specialize (cc3 a). easy.
        - intros. unfold id in *.
-         destruct F, G. simpl in *.
-         rewrite preserve_comp, preserve_comp0.
+         destruct mu. simpl in *.
+         rewrite !preserve_comp.
          repeat rewrite assoc.
          apply rcancel.
-         rewrite preserve_comp, preserve_comp0.
          repeat rewrite assoc.
-         rewrite comm_diagram3.
+         rewrite !cc1.
          repeat rewrite <- assoc.
          now rewrite comm_diag.
 Defined.
@@ -303,16 +402,15 @@ Proof. unshelve econstructor.
        - intro a. cbn in *.
          unshelve econstructor.
          + exact (fobj T a).
-         + cbn in *.
-           exact (trans (@mu _ _ M) a).
-         + cbn in *. clear EMC.
+         + exact (trans (@mu _ _ M) a).
+         + clear EMC.
            destruct M. cbn in *.
            now specialize (comm_diagram2_b4 a).
          + destruct M. cbn in *.
            now rewrite comm_diagram3.
        - intros. cbn in *.
          unshelve econstructor.
-         + cbn in *. exact (fmap T f).
+         + exact (fmap T f).
          + destruct M. cbn in *.
            destruct eta0, mu0. cbn in *.
            now rewrite comm_diag0.
@@ -403,8 +501,6 @@ Proof. intro s.
          exact (fun st: s => (v, st)).
        + cbn. intros a b f.
          extensionality v. easy.
-       + cbn. intros a b f.
-         extensionality v. easy.
 Defined.
 
 Definition MuFs: forall (s: @obj CoqCatT),
@@ -414,10 +510,6 @@ Proof. intro s.
        + cbn. intros a H st.
          destruct H as (f & st').
          exact st. exact (f st').
-       + cbn. intros a b f.
-         extensionality g. compute.
-         extensionality st.
-         destruct g. easy.
        + cbn. intros a b f.
          extensionality g. compute.
          extensionality st.
@@ -453,7 +545,6 @@ Proof. unshelve econstructor.
        - intro A. cbn in *.
          intro a. exact (just A a).
        - intros A B f. cbn. easy.
-       - intros A B f. cbn. easy.
 Defined.
 
 Definition fmapFM {A : Type} (i: maybe (maybe A)): maybe A :=
@@ -467,11 +558,6 @@ Proof. unshelve econstructor.
        - intro A. cbn.
          intro i. cbn in *.
          exact (fmapFM i).
-       - intros A B f. cbv.
-         extensionality a.
-         case_eq a; intros.
-         case_eq m; intros.
-         easy. easy. easy.
        - intros A B f. cbv.
          extensionality a.
          case_eq a; intros.
@@ -497,4 +583,5 @@ Proof. unshelve econstructor.
          extensionality b.
          case_eq b; intros; try easy.
 Defined.
+
 

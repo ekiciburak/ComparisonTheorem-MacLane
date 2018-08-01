@@ -1,14 +1,14 @@
 Require Export Iso.
 
-Class Functor `(C: Category) `(D: Category) : Type :=
+Class Functor (C D: Category): Type :=
   mk_Functor
   {
     fobj            : @obj C -> @obj D;
     fmap            : forall {a b: @obj C} (f: arrow b a), (arrow (fobj b) (fobj a));
     fmapP           : forall x y, Proper (eq ==> eq) (@fmap x y);
     preserve_id     : forall {a: @obj C}, fmap (@identity C a) = (@identity D (fobj a));
-    preserve_comp   : forall {a b c: @obj C} (g : @arrow C c b) (f: @arrow C b a), 
-                             (* fMap a c (g o f) *) fmap (g o f) = (fmap g) o (fmap f)
+    preserve_comp   : forall {a b c: @obj C} (g : @arrow C c b) (f: @arrow C b a),
+                        fmap (g o f) = (fmap g) o (fmap f)
   }.
 Check Functor.
 
@@ -118,6 +118,37 @@ Defined.
 
 Notation " C → D " := (Functor C D) (at level 40, left associativity).
 
+
+Definition FullImageCategory {C D: Category} (F: Functor C D) 
+ (is_inD : forall {a b: @obj C}, @arrow D (fobj F b) (fobj F a) -> Prop)
+ (id_in  : forall a, is_inD (fmap F a a (identity a)))
+ (comp_in: forall {a b c} (f: arrow b a) (g: arrow c b),
+           is_inD (fmap F _ _ f) -> is_inD (fmap F _ _ g) -> is_inD (fmap F _ _ (g o f))): Category.
+Proof. unshelve econstructor.
+       - exact (@obj C).
+       - intros a b. exact { f: @arrow C b a | is_inD a b (fmap F a b f) }.
+       - intros. exists (identity a). exact (id_in a).
+       - intros a b c g f.
+         destruct f as (f & Hf).
+         destruct g as (g & Hg).
+         exists (f o g).
+         now apply comp_in.
+       - repeat intro. now subst.
+       - intros. cbn in *.
+         destruct f as (f & Hf).
+         destruct g as (g & Hg).
+         destruct h as (h & Hh).
+         apply subset_eq_compat.
+         now rewrite assoc.
+       - intros a b f.
+         destruct f as (f & Hf).
+         apply subset_eq_compat.
+         now rewrite f_identity.
+       - intros a b f.
+         destruct f as (f & Hf).
+         apply subset_eq_compat.
+         now rewrite identity_f.
+Defined.
 
 Definition BiHomFunctorC {C D: Category} (G: D → C): C^op × D → CoqCatT.
 Proof. unshelve econstructor.

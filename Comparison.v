@@ -44,139 +44,143 @@ Lemma K_functor: forall
                  (Compose_Functors (K F G A1) GTL) = G /\ (Compose_Functors F (K F G A1)) = FTL.
 Proof. intros C D F G A1 M EMC FTL GTL A2.
        split.  cbn in *.
-
-       assert (fobj (Compose_Functors (K F G A1) GTL) = fobj G).
-       { 
-           unfold Compose_Functors. simpl in *.
-           unfold id in *. easy.
-       }
-       simpl.
        apply F_split2. easy.
+
        apply eq_dep_id_JMeq. cbn in *.
        apply EqdepFacts.eq_sigT_iff_eq_dep. cbn in *.
        apply eq_existT_uncurried.
        assert ((forall a b : obj, arrow b a -> arrow (fobj G b) (fobj G a)) =
                (forall a b : obj, arrow b a -> arrow (fobj G b) (fobj G a))).
        { easy. }
-       exists H0.
+       exists H.
        unfold eq_rect.
-       assert (H0 = eq_refl).
+       assert (H = eq_refl).
        { 
           specialize (UIP_refl _  
            ((forall a b : obj, arrow b a -> arrow (fobj G b) (fobj G a)))); intros.
-          now specialize (H1 H0).
+          now specialize (H0 H).
        }
-       rewrite H1. easy.
+       rewrite H0. easy.
 
        assert (fobj (Compose_Functors F (K F G A1)) = fobj FTL).
-       { 
-           simpl in *.
-           unfold id in *. extensionality a.
-           apply eqTA2. cbn in *.
-           easy.
-           cbn in *. easy.
+       {
+           extensionality a.
+           apply eqTA2; easy.
        }
        simpl.
-(*
-       specialize (F_split _ _ _ _ H); intros.
-       apply H0.
-   
-       unfold Compose_Functors, adj_mon, FTL, EMC in *.
-       unfold id in *.
-       cbn in *. subst.
-       assert (H0 = eq_refl) by admit.
-*)
+
        apply F_split2. easy.
 
        apply eq_dep_id_JMeq.
        apply EqdepFacts.eq_sigT_iff_eq_dep. 
        apply eq_existT_uncurried.
+       simpl in H. unfold id in H.
+       pose proof (fun x => eq_ind_r (fun f => f x = _ x) eq_refl H) as H';
+         cbv beta in H'; clear H; rename H' into H.
+(*
+       inversion H.
+
+cbn. subst.
+
+       assert (H' = eq_refl) by admit.
+
+ eexists (f_equal  H).
+
+       unfold FTL, LAEM. cbn in *.
+
 
        assert ((forall a b : obj,
                arrow b a -> arrow (fobj (Compose_Functors F (K F G A1)) b) 
                (fobj (Compose_Functors F (K F G A1)) a)) =
               (forall a b : obj, arrow b a -> arrow (fobj FTL b) (fobj FTL a))).
        { rewrite H. easy. }
-       exists H0.
-       unfold eq_rect.
 
-       destruct FTL. cbn in *. subst.
+ eexists (f_equal _ eq_refl).
+ unfold eq_rect in *.
+ assert (f_equal id H0 = eq_refl).
+
+
+unfold M in *.
+destruct A1, M.
+intros. subst.
+
+destruct FTL. cbn in *. subst.
+
        assert (H0 = eq_refl) by admit.
        rewrite H.
-       extensionality a. extensionality b.
-       extensionality f. f_equal.
        cbn in *.
-       clear H0 H. destruct fmap.
-       cbn in *.
+       clear H0 H.
        apply eqTAM. cbn.
+       unfold id in *.
+       f_equal. easy.
+       cbn in *.
+       destruct (ob2 a).
+destruct tf.
+*)
 Admitted.
 
-
-Lemma L_functor: forall
+Lemma commL: forall
                {C D   : Category}
                (F     : Functor C D)
                (G     : Functor D C) 
-               (A1    : Adjunction F G),
-               let M  := (@adj_mon   C D F G A1) in
-               let CT := (Kleisli_Category C (Compose_Functors F G) M) in
+               (A    : Adjunction F G),
+               let M  := (@adj_mon   C D F G A) in
+               let CK := (Kleisli_Category C (Compose_Functors F G) M) in
                let FT := (FT F G M) in
                let GT := (GT F G M) in
-               let A2 := (mon_kladj F G M) in
-                 (Compose_Functors FT (L F G A1)) = F /\ (Compose_Functors (L F G A1) G) = GT.
-Proof. intros C D F G A1 M CT FT GT A2.
-       split.  cbn in *.
-
-       unfold M, CT, GT. cbn in *.
-       assert (fobj (Compose_Functors FT (L F G A1)) = fobj F).
-       { 
-           unfold Compose_Functors. simpl in *.
-           unfold id in *. easy.
-       }
-       simpl.
-       specialize (F_split C D
-         (Compose_Functors FT (L F G A1)) F); intros.
-       specialize (H0 H). apply H0.
-       unfold Compose_Functors. simpl.
-       destruct A1, unit, counit. simpl in *.
-       unfold id in *. destruct F, G, L.
-       simpl in *.
-       assert (H = eq_refl).
-       {
-          specialize (UIP_refl _   (fun a : @obj C => fobj a)); intros.
-          now specialize (H1 H).
-       }
-       rewrite H1.
-       extensionality a. extensionality b. extensionality f.
-       rewrite preserve_comp.
-       rewrite assoc.
-       now rewrite ob1, identity_f.
-
-       simpl in *.
-       assert (fobj (Compose_Functors (L F G A1) G) = fobj GT).
-       { 
-           unfold Compose_Functors. simpl in *.
-           unfold id in *. easy.
-       }
-       simpl.
-       specialize (F_split (Kleisli_Category C 
-         (Compose_Functors F G) M) C 
-         (Compose_Functors (L F G A1) G) GT); intros.
-       specialize (H0 H). apply H0.
-       unfold Compose_Functors. simpl in *.
-       destruct A1, unit, counit. simpl in *.
-       unfold id in *. destruct F, G, L.
-       simpl in *.
-       assert (H = eq_refl).
-       { 
-          specialize (UIP_refl _  
-           (fun a : @obj C => fobj0 (fobj a))); intros.
-          now specialize (H1 H).
-       }
-       rewrite H1.
-       extensionality a. extensionality b.
-       extensionality f. now rewrite preserve_comp0.
+                 (Compose_Functors FT (L F G A)) = F /\ (Compose_Functors (L F G A) G) = GT.
+Proof. intros C D F G A1 M CK FT GT; split.
+       - apply F_split2. 
+         + easy.
+         + apply eq_dep_id_JMeq, EqdepFacts.eq_sigT_iff_eq_dep, eq_existT_uncurried. 
+           cbn in *. unfold id in *.
+           unfold eq_rect.
+           assert ((forall a b : obj, arrow b a -> arrow (fobj F b) (fobj F a)) =
+                   (forall a b : obj, arrow b a -> arrow (fobj F b) (fobj F a))) by trivial.
+           exists H.
+           assert (H = eq_refl).
+           {
+              specialize (UIP_refl _ 
+                         (forall a b : obj, arrow b a -> arrow (fobj F b) (fobj F a)) ); intros.
+              now specialize (H0 H).
+           }
+           rewrite H0.
+           extensionality a.
+           extensionality b.
+           extensionality f.
+           rewrite preserve_comp.
+           destruct A1. cbn in *.
+           assert ( fmap F f = identity (fobj F b)  o  fmap F f).
+           { now rewrite identity_f. }
+           rewrite H1 at 2. rewrite assoc. 
+           apply rcancel.
+           apply ob1.
+       - apply F_split2.
+         + easy.
+         + apply eq_dep_id_JMeq. 
+           apply EqdepFacts.eq_sigT_iff_eq_dep.
+           apply eq_existT_uncurried. 
+           cbn in *. unfold id in *.
+           assert ((forall a b : obj, arrow (fobj G (fobj F b)) a ->
+                      arrow (fobj G (fobj F b)) (fobj G (fobj F a))) =
+                   (forall a b : obj, arrow (fobj G (fobj F b)) a ->
+                      arrow (fobj G (fobj F b)) (fobj G (fobj F a)))) by trivial.
+           exists H.
+           assert (H = eq_refl).
+           {
+              specialize (UIP_refl _ 
+                           (forall a b : obj, arrow (fobj G (fobj F b)) a ->
+                            arrow (fobj G (fobj F b)) (fobj G (fobj F a)))); intros.
+              now specialize (H0 H).
+           }
+           unfold eq_rect.
+           rewrite H0.
+           extensionality a.
+           extensionality b.
+           extensionality f.
+           now rewrite preserve_comp.
 Qed.
-Check L_functor.
+Check commL.
 
 Lemma uniqueL: forall
                    {C D: Category}
@@ -194,10 +198,10 @@ Lemma uniqueL: forall
                       (L F G A1).
 Proof. intros.
        unfold unique. split.
-       specialize (L_functor F G A1); intros. apply H.
+       specialize (commL F G A1); intros. apply H.
 
        assert (H1: Compose_Functors FT (L F G A1) = F /\ Compose_Functors (L F G A1) G = GT).
-       specialize (L_functor F G A1); intros. apply H.
+       specialize (commL F G A1); intros. apply H.
        intros R H. destruct H as (Ha, Hb).
        destruct H1 as (H1a, H1b).
        pose proof Ha as Haa.
@@ -246,7 +250,7 @@ Proof. intros.
        unfold M in *.
        destruct M, unit, unit0, counit0. cbn in *. unfold id in *.
        clear H2 Ha H1b H1a.
-       rewrite <- trans_sym.
+       rewrite comm_diag.
        rewrite !assoc.
        now rewrite ob2, identity_f.
        unfold M in *.
@@ -261,7 +265,7 @@ Proof. intros.
        }
        rewrite H4.
        cbn.
-       rewrite <- assoc, <- trans_sym.
+       rewrite <- assoc, comm_diag.
        now rewrite assoc, ob2, identity_f.
 Qed.
 Check uniqueL.
@@ -419,7 +423,7 @@ Proof. intros.
        unfold cM in *.
        destruct cM, unit, unit0, counit. cbn in *. unfold id in *.
        clear H2 Ha H1b H1a.
-       rewrite trans_sym1.
+       rewrite <- comm_diag1.
        rewrite <- !assoc.
        now rewrite ob1, f_identity.
        unfold cM in *.
@@ -434,7 +438,7 @@ Proof. intros.
        }
        rewrite H4.
        cbn.
-       rewrite assoc, trans_sym0.
+       rewrite assoc, <- comm_diag0.
        now rewrite <- assoc, ob1, f_identity.
 Qed.
 Check uniqueduL.

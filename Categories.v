@@ -1,6 +1,8 @@
 Require Export Imports.
 
-Class Category: Type :=
+Set Universe Polymorphism.
+
+Polymorphic Cumulative Class Category: Type :=
  mk_Category 
  {
      obj       : Type;
