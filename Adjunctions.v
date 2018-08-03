@@ -45,8 +45,9 @@ Definition eta_GpFp: forall (p: @obj CoqCatP),
   NaturalTransformation Id (Compose_Functors (Fp p) (Gp p)).
 Proof. intro p.
        unshelve econstructor.
-       - cbn in *. intros q pq.
-         exact (fun (pp: p) => conj pp pq).
+       - cbn in *. 
+         unfold fobjFp, fobjGp. intro q.
+         exact (fun (pq: id q) (pp: p) => conj pp pq).
        - cbn. intros a b f.
          extensionality pa. easy.
 Defined.
@@ -56,14 +57,13 @@ Definition eps_FpGp: forall (p: @obj CoqCatP),
   NaturalTransformation (Compose_Functors (Gp p) (Fp p)) Id.
 Proof. intro p.
        unshelve econstructor.
-       - cbn in *. intros q ModusPonens.
-         destruct ModusPonens as (pp & impl_pq).
-         exact (impl_pq pp).
+       - cbn in *.
+         unfold fobjFp, fobjGp. intro q.
+         exact (fun (H: p /\ (p -> q)) => match H with conj pp ppiq => ppiq pp end).
        - cbn. intros a b f.
          extensionality pp. 
          destruct pp. easy.
 Defined.
-
 
 Definition FpGp_Adjoint (p: @obj CoqCatP) : Adjunction (Fp p) (Gp p).
 Proof. unshelve econstructor.
@@ -765,7 +765,7 @@ Proof. intros C D F G T M FT GT.
            rewrite comm_diagram2_b2.
            now rewrite identity_f.
        - unshelve econstructor.
-         + intro a. exact (identity ((fobj G (fobj F a)))).
+         + intro a. exact (identity (fobj G (fobj F a))).
          + intros. simpl.
            destruct M, FT, GT. simpl in *. destruct mu, eta.
            simpl in *. unfold id in *.

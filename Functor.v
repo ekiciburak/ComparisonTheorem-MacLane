@@ -361,9 +361,11 @@ Defined.
 
 (** Two adjoint functors Fp and Gp over Prop forming an adjunction *)
 
-Definition fobjFp (p q: Prop) := p /\ q.
+Definition fobjFp := fun p => fun q => p /\ q.
 
-Definition fmapFp (p a b : Prop) (f: a -> b) (H: p /\ a): p /\ b :=
+Definition fmapFp:=
+  fun p =>
+  fun (a b: Prop) (f: a -> b) (H: p /\ a) =>
   match H with
     | conj x y => conj x (f y)
   end.
