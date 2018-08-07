@@ -1,5 +1,5 @@
 
-all: Imports.vo Categories.vo Iso.vo Functor.vo NaturalTransformation.vo Monads.vo Adjunctions.vo Comparison.vo
+all: Imports.vo Categories.vo Iso.vo Functor.vo NaturalTransformation.vo Monads.vo Adjunctions.vo Comparison.vo UseCase.vo
 
 Imports.vo : Imports.v
 	coqc Imports.v
@@ -24,6 +24,9 @@ Adjunctions.vo : Adjunctions.v Monads.vo NaturalTransformation.vo Functor.vo Iso
 
 Comparison.vo : Comparison.v Adjunctions.vo Monads.vo NaturalTransformation.vo Functor.vo Iso.vo Categories.vo Imports.vo
 	coqc Comparison.v
+
+UseCase.vo : UseCase.v Comparison.v Adjunctions.vo Monads.vo NaturalTransformation.vo Functor.vo Iso.vo Categories.vo Imports.vo
+	coqc UseCase.v
 
 clean:
 	-rm -f *.vo *.glob .*.aux

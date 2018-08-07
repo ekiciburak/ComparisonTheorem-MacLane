@@ -923,7 +923,7 @@ Proof. intros.
          now rewrite comm_diagram2_b1.
        - intros. cbn in *.
          destruct a. now cbn in *.
-Qed.
+Defined.
 
 Theorem mon_emhomadj: forall
                    {C D: Category}

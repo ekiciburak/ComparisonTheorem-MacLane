@@ -9,7 +9,6 @@ Arguments Compose_NaturalTransformations {_ _ _ _ _ } _ _.
 Arguments Compose_NaturalTransformations_H {_ _ _ _ _ } _ _.
 
 
-
 Lemma Khelper: forall
                {C D    : Category}
                (F      : Functor C D)
@@ -21,12 +20,8 @@ Lemma Khelper: forall
                (forall a b : obj, arrow b a -> arrow (fobj FTL b) (fobj FTL a)).
 Proof. intros.
        assert (fobj (Compose_Functors F (K F G A1)) = fobj FTL).
-       { 
-           simpl in *.
-           unfold id in *. extensionality a.
-           apply eqTA2. cbn in *.
-           easy.
-           cbn in *. easy.
+       {   extensionality a.
+           apply eqTA2; easy.
        }
        now rewrite H.
 Defined.
@@ -62,61 +57,21 @@ Proof. intros C D F G A1 M EMC FTL GTL A2.
        }
        rewrite H0. easy.
 
-       assert (fobj (Compose_Functors F (K F G A1)) = fobj FTL).
-       {
+       apply F_split2.
            extensionality a.
            apply eqTA2; easy.
-       }
-       simpl.
+       assert (H: fobj (Compose_Functors F (K F G A1)) = fobj FTL).
+           extensionality a.
+           apply eqTA2; easy.
 
-       apply F_split2. easy.
-
+       assert ((forall a b : obj,
+       Categories.arrow b a -> Categories.arrow (fobj (Compose_Functors F (K F G A1)) b) (fobj (Compose_Functors F (K F G A1)) a)) =
+       (forall a b : obj, Categories.arrow b a -> Categories.arrow (fobj FTL b) (fobj FTL a)) ).
+       { now rewrite H. }
+ 
        apply eq_dep_id_JMeq.
        apply EqdepFacts.eq_sigT_iff_eq_dep. 
        apply eq_existT_uncurried.
-       simpl in H. unfold id in H.
-       pose proof (fun x => eq_ind_r (fun f => f x = _ x) eq_refl H) as H';
-         cbv beta in H'; clear H; rename H' into H.
-(*
-       inversion H.
-
-cbn. subst.
-
-       assert (H' = eq_refl) by admit.
-
- eexists (f_equal  H).
-
-       unfold FTL, LAEM. cbn in *.
-
-
-       assert ((forall a b : obj,
-               arrow b a -> arrow (fobj (Compose_Functors F (K F G A1)) b) 
-               (fobj (Compose_Functors F (K F G A1)) a)) =
-              (forall a b : obj, arrow b a -> arrow (fobj FTL b) (fobj FTL a))).
-       { rewrite H. easy. }
-
- eexists (f_equal _ eq_refl).
- unfold eq_rect in *.
- assert (f_equal id H0 = eq_refl).
-
-
-unfold M in *.
-destruct A1, M.
-intros. subst.
-
-destruct FTL. cbn in *. subst.
-
-       assert (H0 = eq_refl) by admit.
-       rewrite H.
-       cbn in *.
-       clear H0 H.
-       apply eqTAM. cbn.
-       unfold id in *.
-       f_equal. easy.
-       cbn in *.
-       destruct (ob2 a).
-destruct tf.
-*)
 Admitted.
 
 Lemma commL: forall
@@ -249,6 +204,7 @@ Proof. intros C D F G A1 M CT FT GT A2.
        - apply uniqueL.
 Qed.
 Check ComparisonMacLane.
+
 
 (** dualizing the theorem *)
 Lemma duL_functor: forall

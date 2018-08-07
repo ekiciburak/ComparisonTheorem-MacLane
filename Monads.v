@@ -138,6 +138,7 @@ Proof. destruct cM. destruct eps0, delta0. simpl in *.
 Defined.
 Check coKleisli_Category.
 
+
 Class TAlgebra (C: Category)
                (T: Functor C C)
                (M: Monad C T) :=
@@ -294,7 +295,7 @@ Lemma eqTAM: forall
                   (T      : Functor C C)
                   (M      : Monad C T)
                   (a b    : @obj C)
-                  (TA1    : TAlgebra C T M a) 
+                  (TA1    : TAlgebra C T M a)
                   (TA2    : TAlgebra C T M b)
                   (ta1 ta2: TAlgebraMap C T M a b TA1 TA2)
                   (mapEq  : (@tf C T M a b TA1 TA2 ta1) = (@tf C T M a b TA1 TA2 ta2)),
@@ -311,7 +312,7 @@ Program Definition EilenbergMooreCategory (C: Category) {a: @obj C} (T: Functor 
 Proof. unshelve econstructor.
        - exact (TAlgebra C T M a).
        - intros TA1 TA2.
-         exact (TAlgebraMap C T M TA1 TA2).
+         exact (TAlgebraMap C T M a a TA1 TA2).
        - intros.
          cbn in *.
          unshelve econstructor.
@@ -343,13 +344,10 @@ Defined.
 Check EilenbergMooreCategory.
 *)
 
-(** left adjoint functor that acts as F_T *)
-Definition FT {C D: Category}
-              (F  : Functor C D)
-              (G  : Functor D C)
-              (T  := Compose_Functors F G)
-              (M  : Monad C T)
-              (KC := (Kleisli_Category C T M)): Functor C KC.
+Definition aFT {C: Category}
+               (F  : Functor C C)
+               (M  : Monad C F)
+               (KC := (Kleisli_Category C F M)): Functor C KC.
 Proof. destruct M as (eta, mu, cc1, cc2, cc3, cc4).
        unshelve econstructor.
        - exact id.
@@ -364,16 +362,68 @@ Proof. destruct M as (eta, mu, cc1, cc2, cc3, cc4).
          destruct eta. cbn in *.
          now rewrite comm_diag.
 Defined.
-Check FT.
+Check aFT.
 
-(** right adjoint functor that acts as G_T *)
-Definition GT {C D: Category}
+(** left adjoint functor that acts as F_T *)
+Definition FT {C D: Category}
               (F  : Functor C D)
               (G  : Functor D C)
               (T  := Compose_Functors F G)
               (M  : Monad C T)
-              (KC := (Kleisli_Category C T M)): Functor KC C.
+              (KC := (Kleisli_Category C T M)): Functor C KC.
+Proof. exact (aFT T M). Defined.
+(*
+ destruct M as (eta, mu, cc1, cc2, cc3, cc4).
+       unshelve econstructor.
+       - exact id.
+       - intros a b f. exact (trans eta b o f).
+       - repeat intro. subst. easy.
+       - intros. simpl in *. rewrite f_identity. easy.
+       - intros. simpl in *. 
+         rewrite !preserve_comp.
+         do 3 rewrite assoc.
+         rewrite cc3.
+         rewrite identity_f.
+         destruct eta. cbn in *.
+         now rewrite comm_diag.
+Defined.
+*)
+Check FT.
+
+(** right adjoint functor that acts as G_T *)
+Definition aGT {C  : Category}
+               (F  : Functor C C)
+               (M  : Monad C F)
+               (KC := (Kleisli_Category C F M)): Functor KC C.
 Proof. destruct M as (eta, mu, cc1, cc2, cc3, cc4).
+       unshelve econstructor; simpl.
+       - exact (fobj F).
+       - intros a b f. exact (trans mu b o fmap F f).
+       - repeat intro. subst. easy.
+       - intros. clear KC.
+         specialize (cc3 a). easy.
+       - intros. unfold id in *.
+         destruct mu. simpl in *.
+         rewrite !preserve_comp.
+         repeat rewrite assoc.
+         apply rcancel.
+         repeat rewrite assoc.
+         rewrite !cc1.
+         repeat rewrite <- assoc.
+         now rewrite comm_diag.
+Defined.
+Check aGT.
+
+(** right adjoint functor that acts as G_T *)
+Definition GT  {C D: Category}
+               (F  : Functor C D)
+               (G  : Functor D C)
+               (T  := Compose_Functors F G)
+               (M  : Monad C T)
+               (KC := (Kleisli_Category C T M)): Functor KC C.
+Proof. exact (aGT T M). Defined.
+(*
+ destruct M as (eta, mu, cc1, cc2, cc3, cc4).
        unshelve econstructor; simpl.
        - exact (fobj T).
        - intros a b f. exact (trans mu b o fmap T f).
@@ -390,6 +440,7 @@ Proof. destruct M as (eta, mu, cc1, cc2, cc3, cc4).
          repeat rewrite <- assoc.
          now rewrite comm_diag.
 Defined.
+*)
 Check GT.
 
 Definition LAEM {C D: Category}
