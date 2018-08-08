@@ -8,14 +8,26 @@ Class Functor (C D: Category): Type :=
     fmapP           : forall x y, Proper (eq ==> eq) (@fmap x y);
     preserve_id     : forall {a: @obj C}, fmap (@identity C a) = (@identity D (fobj a));
     preserve_comp   : forall {a b c: @obj C} (g : @arrow C c b) (f: @arrow C b a),
-                        fmap (g o f) = (fmap g) o (fmap f)
+                      fmap (g o f) = (fmap g) o (fmap f)
   }.
 Check Functor.
 
+Notation " C → D " := (Functor C D) (at level 40, left associativity).
 
 Arguments fmap {_} {_} _ _ _ _.
 Arguments fobj {_} {_} _ _.
 
+(** sameness of Functors using heterogenous (John Major's) equality *)
+Lemma F_split: forall (C D: Category) (F G: Functor C D),
+                 fobj F = fobj G -> JMeq (fmap F) (fmap G) -> F = G.
+Proof.
+    destruct F; destruct G; cbn; intros; subst; apply JMeq_eq in H0; subst; f_equal.
+    now destruct (proof_irrelevance _ fmapP0 fmapP1).
+    now destruct (proof_irrelevance _ preserve_id0 preserve_id1).
+    now destruct (proof_irrelevance _ preserve_comp0 preserve_comp1).
+Defined.
+
+(** Compsing functors *)
 Definition Compose_Functors (C D E: Category) 
                             (F    : Functor C D) 
                             (G    : Functor D E): (Functor C E).
@@ -32,6 +44,21 @@ Defined.
 
 Arguments Compose_Functors {_} {_} {_} _ _.
 
+(** Associativity of functor composition *)
+Lemma FunctorCompositionAssoc: forall {D C B A : Category} 
+  (F : Functor C D) (G : Functor B C) (H : Functor A B),
+  Compose_Functors H (Compose_Functors G F) = Compose_Functors (Compose_Functors H G) F.
+Proof. intros.
+       apply F_split.
+       - easy.
+       - apply eq_dep_id_JMeq, EqdepFacts.eq_sigT_iff_eq_dep, 
+         eq_existT_uncurried; cbn.
+         now exists (eq_refl 
+         (forall a b : obj, arrow b a ->
+           arrow (fobj F (fobj G (fobj H b))) (fobj F (fobj G (fobj H a))))).
+Defined.
+
+(** the identity functor *)
 Definition IdFunctor {C: Category}: Functor C C.
 Proof. unshelve econstructor.
        - exact id.
@@ -41,84 +68,47 @@ Proof. unshelve econstructor.
        - intros. now destruct C.
 Defined.
 
-Definition Id {C: Category}: @Functor C C.
-Proof. refine (@mk_Functor C C id (fun a b f => f) _ _ _);
-       intros; now unfold id.
-Defined.
-
-(** sameness of Functors, inspired by Amin Timany *)
-Lemma F_split: forall
-               (C D  : Category)
-               (F G  : Functor C D)
-               (ObjEq: (fobj F) = (fobj G)),
-               ((fun a b => 
-                   match ObjEq in _ = V return ((arrow b a) -> (arrow (V b) (V a))) with
-                    | eq_refl => (fmap F a b)
-                   end) = fmap G) -> F = G.
-Proof.
-    destruct F; destruct G; simpl; intros; subst; f_equal.
-    now destruct (proof_irrelevance _ fmapP0 fmapP1).
-    now destruct (proof_irrelevance _ preserve_id0 preserve_id1).
-    now destruct (proof_irrelevance _ preserve_comp0 preserve_comp1).
-Defined.
-
-(** F_split with JMeq *)
-Lemma F_split2: forall
-               (C D  : Category)
-               (F G  : Functor C D)
-               (ObjEq: (fobj F) = (fobj G)),
-               JMeq (fmap F) (fmap G) -> F = G.
-Proof.
-    destruct F; destruct G; simpl; intros; subst; apply JMeq_eq in H; subst; f_equal.
-    now destruct (proof_irrelevance _ fmapP0 fmapP1).
-    now destruct (proof_irrelevance _ preserve_id0 preserve_id1).
-    now destruct (proof_irrelevance _ preserve_comp0 preserve_comp1).
-Defined.
-
-Lemma FunctorCompositionAssoc: forall {D C B A : Category} 
-  (F : Functor C D) (G : Functor B C) (H : Functor A B),
-  Compose_Functors H (Compose_Functors G F) = Compose_Functors (Compose_Functors H G) F.
-Proof. intros.
-       assert (fobj (Compose_Functors H (Compose_Functors G F)) = fobj (Compose_Functors (Compose_Functors H G) F)).
-       { cbn. easy. }
-       specialize (F_split2 _ _ _ _ H0); intros.
-       apply H1. cbn. easy.
-Defined.
-
+(** Identity functors cancels on the right *)
 Lemma ComposeIdr: forall {C D: Category} (F: Functor C D),
   Compose_Functors F IdFunctor = F.
 Proof. intros.
-       assert (fobj (Compose_Functors F IdFunctor) = fobj F).
-       { cbn. easy. }
-       specialize (F_split _ _ _ _ H); intros.
-       apply H0. cbn.
-       extensionality a. extensionality b.
-       clear H0. cbn in H. unfold id in *.
-       assert (H = eq_refl).
-       { specialize (UIP_refl _   (fun a : @obj C => fobj F a)); intros.
-         now specialize (H0 H).
-       } now subst.
+       apply F_split.
+       - easy.
+       - apply eq_dep_id_JMeq, EqdepFacts.eq_sigT_iff_eq_dep, 
+         eq_existT_uncurried; cbn.
+       unfold id in *.
+       now exists (eq_refl 
+       (forall a b : obj, arrow b a -> arrow (fobj F b) (fobj F a))).
 Defined.
 
-
+(** Identity functors cancels on the left *)
 Lemma ComposeIdl: forall {C D: Category} (F: Functor C D),
   Compose_Functors IdFunctor F = F.
 Proof. intros.
-       assert (fobj (Compose_Functors IdFunctor F) = fobj F).
-       { cbn. easy. }
-       specialize (F_split _ _ _ _ H); intros.
-       apply H0. cbn.
-       extensionality a. extensionality b.
-       clear H0. cbn in H. unfold id in *.
-       assert (H = eq_refl).
-       { specialize (UIP_refl _   (fun a : @obj C => fobj F a)); intros.
-         now specialize (H0 H).
-       } now subst.
+       apply F_split.
+       - easy.
+       - apply eq_dep_id_JMeq, EqdepFacts.eq_sigT_iff_eq_dep, 
+         eq_existT_uncurried; cbn.
+       unfold id in *.
+       now exists (eq_refl 
+       (forall a b : obj, arrow b a -> arrow (fobj F b) (fobj F a))).
 Defined.
 
-Notation " C → D " := (Functor C D) (at level 40, left associativity).
+(** the 2-category Cat *)
+Definition Cat: Category.
+Proof. unshelve econstructor.
+       - exact Category.
+       - intros C D. exact (Functor C D).
+       - intro C. exact (@IdFunctor C).
+       - intros E D C F G. exact (Compose_Functors F G).
+       - repeat intro. now subst.
+       - intros D C B A F G H. 
+         exact (FunctorCompositionAssoc F G H).
+       - intros D C F. exact (ComposeIdl F).
+       - intros D C F. exact (ComposeIdr F).
+Defined.
 
-
+(** the full-image category of a functor *)
 Definition FullImageCategory {C D: Category} (F: Functor C D) 
  (is_inD : forall {a b: @obj C}, @arrow D (fobj F b) (fobj F a) -> Prop)
  (id_in  : forall a, is_inD (fmap F a a (identity a)))
@@ -149,6 +139,15 @@ Proof. unshelve econstructor.
          apply subset_eq_compat.
          now rewrite identity_f.
 Defined.
+
+(*
+
+
+Definition Id {C: Category}: @Functor C C.
+Proof. refine (@mk_Functor C C id (fun a b f => f) _ _ _);
+       intros; now unfold id.
+Defined.
+
 
 Definition BiHomFunctorC {C D: Category} (G: D → C): C^op × D → CoqCatT.
 Proof. unshelve econstructor.
@@ -307,6 +306,9 @@ Proof. unshelve econstructor.
          + now cbn.
          + cbn in *. now rewrite IHIHxl.
 Defined.
+*)
+
+(** Some basic functor examples from CIC *)
 
 (** Maybe functor *)
 Inductive maybe (A: Type) :=
@@ -336,7 +338,6 @@ Proof. unshelve econstructor.
 Defined.
 
 (** State functor. *)
-
 Definition fobjFs (s a : Type) := s -> (a * s).
 
 Definition fmapFs (s A B: Type) (f: A -> B) (x : fobjFs s A) :=
@@ -360,7 +361,6 @@ Proof. intro s.
 Defined.
 
 (** Two adjoint functors Fp and Gp over Prop forming an adjunction *)
-
 Definition fobjFp := fun p => fun q => p /\ q.
 
 Definition fmapFp:=
@@ -392,3 +392,4 @@ Proof. unshelve econstructor.
        - intros. cbn in *. extensionality H. easy.
        - intros. cbn in *. extensionality H. easy.
 Defined.
+

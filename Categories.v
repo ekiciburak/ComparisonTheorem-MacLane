@@ -33,6 +33,7 @@ Proof. intros C D H0 H1 H2 H3.
        now destruct (proof_irrelevance _ f_identity0 f_identity1).
 Defined.
 
+(** some example categories *)
 Class SubCategory (C: Category): Type :=
   mk_SubCategory
   {
