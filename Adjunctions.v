@@ -277,68 +277,6 @@ Proof. intros.
           ccomm_diagram2_b1, f_identity.
 Defined.
 
-(** the comparison functor L *)
-Definition L: forall
-               {C D   : Category}
-               (F     : Functor C D)
-               (G     : Functor D C) 
-               (A     : Adjunction F G),
-               let M  := (adj_mon F G A) in
-               let CM := (adj_comon F G A) in
-               let CK := (Kleisli_Category C (Compose_Functors F G) M) in
-               let FT := (FT (Compose_Functors F G) M) in
-               let GT := (GT (Compose_Functors F G) M) in Functor CK D.
-Proof. intros C D F G A M CM CK FT GT. 
-       unshelve econstructor.
-       - exact (fobj F).
-       - intros a b f.
-         destruct CM as (eps, delta, cc1, cc2, cc3, cc4).
-         exact (trans eps (fobj F b) o fmap F f).
-       - repeat intro. now subst.
-       - intros. destruct A, unit0, counit0.
-         cbn in *. now rewrite <- ob3.
-       - intros. cbn in *.
-         rewrite preserve_comp.
-         destruct A, unit0, counit0. cbn in *.
-         do 2 rewrite assoc.
-         apply rcancel.
-         rewrite <- preserve_comp.
-         now rewrite <- comm_diag0.
-Defined.
-
-(** dualizing the comparison functor L *)
-Definition duL: forall
-                 {C D   : Category}
-                 (F     : Functor D C)
-                 (G     : Functor C D)
-                 (A1    : Adjunction F G),
-                 let cM := (adj_comon F G A1) in
-                 let  M := (adj_mon   F G A1) in
-                 let CD := (coKleisli_Category C (Compose_Functors G F) cM) in
-                 let FD := (FD (Compose_Functors G F) cM) in
-                 let GD := (GD (Compose_Functors G F) cM) in
-                 let A2 := (comon_cokladj (Compose_Functors G F) cM) in Functor CD D.
-Proof. intros C D F G A1 cM M CD FD GD A2. simpl in *.
-       unshelve econstructor.
-       - exact (fobj G).
-       - intros.
-         destruct M, eta.
-         exact ((fmap G f) o (trans (fobj G a))).
-       - repeat intro. subst. easy.
-       - intros. simpl in *. destruct A1. now rewrite ob4.
-       - intros. simpl in *. rewrite preserve_comp.
-         rewrite <- assoc.
-         destruct A1, unit0. cbn in *.
-         rewrite comm_diag.
-         rewrite preserve_comp.
-         do 2 rewrite assoc.
-         apply rcancel.
-         do 2 rewrite <- assoc.
-         apply lcancel.
-         unfold id in *.
-         now rewrite comm_diag.
-Defined.
-
 (** hepler lemma for the uniqueness proof of the comparison functor *)
 Lemma adj_unique_map: forall (C D: Category) (F: Functor C D) (G: Functor D C) (A: Adjunction F G),
        (forall (a: @obj C) (b: @obj D) (f: @arrow C (fobj G b) a) (g h: @arrow D b (fobj F a)),

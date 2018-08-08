@@ -14,7 +14,7 @@ Lemma AnniliationOfDualAdjunctions: forall
                   Compose_Functors L (GD D cM) = GT (Compose_Functors (FD D cM) (GD D cM)) (adj_mon (FD D cM) (GD D cM) cKA) /\
                   Compose_Functors (Compose_Functors (GD D cM) (FT (Compose_Functors (FD D cM) (GD D cM)) (adj_mon (FD D cM) (GD D cM) cKA))) L = D.
 Proof. intros.
-       exists (Adjunctions.L (FD D cM) (GD D cM) cKA).
+       exists (Comparison.L (FD D cM) (GD D cM) cKA).
        split. split. eapply commL.
        split. eapply commL.
        apply F_split. cbn. easy.
