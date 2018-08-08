@@ -1,4 +1,4 @@
-Require Export Adjunctions.
+Require Export Adjunction.
 
 Arguments fmap {_} {_} _ {_} {_} _.
 Arguments fobj {_} {_} _ _.

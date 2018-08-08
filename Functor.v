@@ -1,4 +1,4 @@
-Require Export Categories.
+Require Export Category.
 
 Class Functor (C D: Category): Type :=
   mk_Functor

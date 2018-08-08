@@ -1,4 +1,4 @@
-Require Export Monads.
+Require Export Monad.
 
 Arguments fmap {_} {_} _ {_} {_} _.
 Arguments fobj {_} {_} _ _.

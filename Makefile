@@ -1,28 +1,28 @@
 
-all: Imports.vo Categories.vo Functor.vo NaturalTransformation.vo Monads.vo Adjunctions.vo Comparison.vo UseCase.vo
+all: Imports.vo Category.vo Functor.vo NaturalTransformation.vo Monad.vo Adjunction.vo Comparison.vo UseCase.vo
 
 Imports.vo : Imports.v
 	coqc Imports.v
 
-Categories.vo : Categories.v Imports.vo
-	coqc Categories.v
+Category.vo : Category.v Imports.vo
+	coqc Category.v
 
-Functor.vo : Functor.v Categories.vo Imports.vo
+Functor.vo : Functor.v Category.vo Imports.vo
 	coqc Functor.v
 	
-NaturalTransformation.vo : NaturalTransformation.v Functor.vo Categories.vo Imports.vo
+NaturalTransformation.vo : NaturalTransformation.v Functor.vo Category.vo Imports.vo
 	coqc NaturalTransformation.v
 
-Monads.vo : Monads.v NaturalTransformation.vo Functor.vo Categories.vo Imports.vo
-	coqc Monads.v
+Monad.vo : Monad.v NaturalTransformation.vo Functor.vo Category.vo Imports.vo
+	coqc Monad.v
 
-Adjunctions.vo : Adjunctions.v Monads.vo NaturalTransformation.vo Functor.vo Categories.vo Imports.vo
-	coqc Adjunctions.v
+Adjunction.vo : Adjunction.v Monad.vo NaturalTransformation.vo Functor.vo Category.vo Imports.vo
+	coqc Adjunction.v
 
-Comparison.vo : Comparison.v Adjunctions.vo Monads.vo NaturalTransformation.vo Functor.vo Categories.vo Imports.vo
+Comparison.vo : Comparison.v Adjunction.vo Monad.vo NaturalTransformation.vo Functor.vo Category.vo Imports.vo
 	coqc Comparison.v
 
-UseCase.vo : UseCase.v Comparison.v Adjunctions.vo Monads.vo NaturalTransformation.vo Functor.vo Categories.vo Imports.vo
+UseCase.vo : UseCase.v Comparison.v Adjunction.vo Monad.vo NaturalTransformation.vo Functor.vo Category.vo Imports.vo
 	coqc UseCase.v
 
 clean:
