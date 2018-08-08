@@ -30,7 +30,6 @@ Class Adjunction {C D: Category}
       ob2   : forall a, (fmap G (trans counit a)) o (trans unit (fobj G a)) 
                         = @identity C (fobj G a)
 }.
-Check Adjunction.
 
 Arguments Adjunction {_} {_} _ _.
 
@@ -134,7 +133,6 @@ Proof. intros C1 C2 F G T T2 A.
          destruct F, G. simpl in *. unfold id in *.
          now rewrite cc2.
 Defined.
-Check adj_mon.
 
 (** every adjunction gives raise to a comonad *)
 Theorem adj_comon: forall
@@ -169,7 +167,6 @@ Proof. intros C1 C2 F G D D2 A.
          rewrite <- preserve_comp.
          now rewrite cc2, preserve_id.
 Defined.
-Check adj_comon.
 
 (** every monad gives raise to a Kleisli adjunction *)
 Theorem mon_kladj: forall
@@ -234,7 +231,6 @@ Proof. intros C D F G T M FT GT.
          rewrite comm_diag, f_identity.
          now rewrite comm_diagram2_b2.
 Defined.
-Check mon_kladj.
 
 (** every comonad gives raise to a coKleisli adjunction *)
 Theorem comon_cokladj: forall
@@ -280,19 +276,6 @@ Proof. intros.
           now rewrite Functor.preserve_id, identity_f, <- assoc,
           ccomm_diagram2_b1, f_identity.
 Defined.
-Check comon_cokladj.
-
-(** every comonad gives raise to a coKleisli adjunction: endo-functor is FG *)
-Theorem comon_cokladj_GF: forall
-                   {C D: Category}
-                   (F  : Functor D C)
-                   (G  : Functor C D)
-                   (D  := Compose_Functors G F)
-                   (cM : coMonad C D)
-                   (FD := FD D cM)
-                   (GD := GD D cM), Adjunction FD GD.
-Proof. intros. apply comon_cokladj. Defined.
-Check comon_cokladj_GF.
 
 (** the comparison functor L *)
 Definition L: forall
@@ -322,7 +305,6 @@ Proof. intros C D F G A M CM CK FT GT.
          rewrite <- preserve_comp.
          now rewrite <- comm_diag0.
 Defined.
-Check L.
 
 (** dualizing the comparison functor L *)
 Definition duL: forall
@@ -356,7 +338,6 @@ Proof. intros C D F G A1 cM M CD FD GD A2. simpl in *.
          unfold id in *.
          now rewrite comm_diag.
 Defined.
-Check duL.
 
 (** hepler lemma for the uniqueness proof of the comparison functor *)
 Lemma adj_unique_map: forall (C D: Category) (F: Functor C D) (G: Functor D C) (A: Adjunction F G),

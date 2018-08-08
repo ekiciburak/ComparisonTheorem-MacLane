@@ -4,8 +4,6 @@ Arguments Compose_Functors {_} {_} {_} _ _.
 Arguments fmap {_} {_} _ {_} {_} _.
 Arguments fobj {_} {_} _ _.
 
-Check fobj.
-
 Class NaturalTransformation (C D: Category) 
                             (F  : Functor C D)
                             (G  : Functor C D): Type :=
@@ -14,8 +12,6 @@ Class NaturalTransformation (C D: Category)
     trans    : forall (a: @obj C), (@arrow D (fobj G a) (fobj F a));
     comm_diag: forall {a b: @obj C} (f: arrow  b a), fmap G f o trans a  = trans b o fmap F f;
   }.
-Check NaturalTransformation.
-
 
 Arguments NaturalTransformation {_} {_} _ _.
 Arguments trans {_} {_} {_} {_} _ _.

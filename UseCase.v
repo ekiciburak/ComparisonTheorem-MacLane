@@ -44,5 +44,3 @@ Proof. intros.
        destruct H as (Ha, (Hb, Hc)). apply Ha.
        destruct H as (Ha, (Hb, Hc)). apply Hb.
 Qed.
-Check AnniliationOfDualAdjunctions.
-

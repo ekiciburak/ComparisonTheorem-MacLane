@@ -25,7 +25,6 @@ Class Monad (C: Category)
     comm_diagram2_b2: forall (a: @obj C), (trans mu a) o (trans eta (fobj T a)) =
                         (identity (fobj T a))
   }.
-Check Monad.
 
 (** comonads *)
 Class coMonad (C: Category) 
@@ -47,7 +46,6 @@ Class coMonad (C: Category)
                        (fmap D (trans eps a)) o (trans delta a) =
                        (identity (fobj D a))
   }.
-Check coMonad.
 
 Theorem rcancel:  forall {C: Category} {a b c: @obj C}
                          (f g: arrow c b) (h: arrow b a), 
@@ -90,7 +88,6 @@ Proof. destruct M. destruct eta0, mu0. simpl in *.
          rewrite comm_diag. rewrite assoc.
          now rewrite comm_diagram2_b4, identity_f.
 Defined.
-Check Kleisli_Category.
 
 (** the coKleisli category of a comonad *)
 Definition coKleisli_Category 
@@ -121,8 +118,6 @@ Proof. destruct cM. destruct eps0, delta0. simpl in *.
        - intros. unfold id in *. simpl in *. unfold id in *.
          now rewrite <- assoc, ccomm_diagram2_b4, f_identity.
 Defined.
-Check coKleisli_Category.
-
 
 (** left adjoint functor that acts as F_T *)
 Definition FT {C  : Category}
@@ -143,7 +138,6 @@ Proof. destruct M as (eta, mu, cc1, cc2, cc3, cc4).
          destruct eta. cbn in *.
          now rewrite comm_diag.
 Defined.
-Check FT.
 
 (** right adjoint functor that acts as G_T *)
 Definition GT  {C  : Category}
@@ -167,7 +161,6 @@ Proof. destruct M as (eta, mu, cc1, cc2, cc3, cc4).
          repeat rewrite <- assoc.
          now rewrite comm_diag.
 Defined.
-Check GT.
 
 (** right adjoint functor that acts as F_D *)
 Definition FD {C  : Category}
@@ -193,7 +186,6 @@ Proof. destruct cM, eps0.
           do 2 rewrite <- assoc.
           now rewrite comm_diag0.
 Defined.
-Check FD.
 
 (** left adjoint functor that acts as G_D *)
 Definition GD {C  : Category}
@@ -214,7 +206,6 @@ Proof. destruct cM, eps0.
           repeat rewrite assoc, ccomm_diagram2_b3, f_identity.
           now rewrite <- comm_diag, assoc.
 Defined.
-Check GD.
 
 (** some basic monad examples from CIC *)
 

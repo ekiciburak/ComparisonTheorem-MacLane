@@ -1,4 +1,4 @@
-Require Export Iso.
+Require Export Categories.
 
 Class Functor (C D: Category): Type :=
   mk_Functor
@@ -10,7 +10,6 @@ Class Functor (C D: Category): Type :=
     preserve_comp   : forall {a b c: @obj C} (g : @arrow C c b) (f: @arrow C b a),
                       fmap (g o f) = (fmap g) o (fmap f)
   }.
-Check Functor.
 
 Notation " C → D " := (Functor C D) (at level 40, left associativity).
 
@@ -139,174 +138,6 @@ Proof. unshelve econstructor.
          apply subset_eq_compat.
          now rewrite identity_f.
 Defined.
-
-(*
-
-
-Definition Id {C: Category}: @Functor C C.
-Proof. refine (@mk_Functor C C id (fun a b f => f) _ _ _);
-       intros; now unfold id.
-Defined.
-
-
-Definition BiHomFunctorC {C D: Category} (G: D → C): C^op × D → CoqCatT.
-Proof. unshelve econstructor.
-       - intros. cbn in *. destruct X as (x, y).
-         exact (@arrow C (fobj G y) x).
-       - intros. cbn in *.
-         destruct a as (a1, a2).
-         destruct b as (b1, b2).
-         destruct f as (f1, f2).
-         cbn in *. intro g.
-         exact ((fmap G _ _ f2) o g o f1).
-       - repeat intro. now subst.
-       - intros. destruct a as (a1, a2).
-         cbn. extensionality f.
-         now rewrite f_identity, preserve_id, identity_f.
-       - intros.
-         destruct a as (a1, a2).
-         destruct b as (b1, b2).
-         destruct c as (c1, c2).
-         cbn in *.
-         destruct f as (f1, f2).
-         destruct g as (g1, g2).
-         cbn. extensionality h.
-         rewrite preserve_comp.
-         now repeat rewrite assoc.
-Defined.
-
-Definition BiHomFunctorC_GL {C D E: Category} (G: D → C) (L: E → D): C^op × E → CoqCatT.
-Proof. unshelve econstructor.
-       - intros. cbn in *. destruct X as (x, y).
-         exact (@arrow C (fobj G (fobj L y)) x).
-       - intros. cbn in *.
-         destruct a as (a1, a2).
-         destruct b as (b1, b2).
-         destruct f as (f1, f2).
-         cbn in *. intro g.
-         exact ((fmap G _ _ (fmap L _ _ f2)) o g o f1).
-       - repeat intro. now subst.
-       - intros. destruct a as (a1, a2).
-         cbn. extensionality f.
-         now rewrite !preserve_id, f_identity, identity_f.
-       - intros.
-         destruct a as (a1, a2).
-         destruct b as (b1, b2).
-         destruct c as (c1, c2).
-         cbn in *.
-         destruct f as (f1, f2).
-         destruct g as (g1, g2).
-         cbn. extensionality h.
-         rewrite !preserve_comp.
-         now repeat rewrite assoc.
-Defined.
-
-Definition BiHomFunctorD {C D: Category} (F: C → D): (C^op) × D → CoqCatT.
-Proof. unshelve econstructor.
-       - intros. cbn in *. destruct X as (x, y).
-         exact (@arrow D y (fobj F x)).
-       - intros. cbn in *.
-         destruct a as (a1, a2).
-         destruct b as (b1, b2).
-         destruct f as (f1, f2).
-         cbn in *. intro g.
-         exact (f2 o g o (fmap F _ _ f1)).
-       - repeat intro. now subst.
-       - intros. destruct a as (a1, a2).
-         cbn. extensionality f.
-         now rewrite identity_f, preserve_id, f_identity.
-       - intros.
-         destruct a as (a1, a2).
-         destruct b as (b1, b2).
-         destruct c as (c1, c2).
-         cbn in *.
-         destruct f as (f1, f2).
-         destruct g as (g1, g2).
-         cbn. extensionality h.
-         rewrite preserve_comp.
-         now repeat rewrite assoc.
-Defined.
-
-Definition BiHomFunctorD_LF_L {C D E: Category} (F: C → D) (L: D → E): (C^op) × D → CoqCatT.
-Proof. unshelve econstructor.
-       - intros. cbn in *. destruct X as (x, y).
-         exact (@arrow E (fobj L y) (fobj L (fobj F x))).
-       - intros. cbn in *.
-         destruct a as (a1, a2).
-         destruct b as (b1, b2).
-         destruct f as (f1, f2).
-         cbn in *. intro g.
-         exact ((fmap L _ _ f2) o g o (fmap L _ _ (fmap F _ _ f1))).
-       - repeat intro. now subst.
-       - intros. destruct a as (a1, a2).
-         cbn. extensionality f.
-         now rewrite !preserve_id, identity_f, f_identity.
-       - intros.
-         destruct a as (a1, a2).
-         destruct b as (b1, b2).
-         destruct c as (c1, c2).
-         cbn in *.
-         destruct f as (f1, f2).
-         destruct g as (g1, g2).
-         cbn. extensionality h.
-         rewrite !preserve_comp.
-         now repeat rewrite assoc.
-Defined.
-
-Definition BiHomFunctorD_F_L {C D E: Category} (F: C → D) (L: E → D): (C^op) × E → CoqCatT.
-Proof. unshelve econstructor.
-       - intros. cbn in *. destruct X as (x, y).
-         exact (@arrow D (fobj L y) (fobj F x)).
-       - intros. cbn in *.
-         destruct a as (a1, a2).
-         destruct b as (b1, b2).
-         destruct f as (f1, f2).
-         cbn in *. intro g.
-         exact ((fmap L _ _ f2) o g o (fmap F _ _ f1)).
-       - repeat intro. now subst.
-       - intros. destruct a as (a1, a2).
-         cbn. extensionality f.
-         now rewrite !preserve_id, identity_f, f_identity.
-       - intros.
-         destruct a as (a1, a2).
-         destruct b as (b1, b2).
-         destruct c as (c1, c2).
-         cbn in *.
-         destruct f as (f1, f2).
-         destruct g as (g1, g2).
-         cbn. extensionality h.
-         rewrite !preserve_comp.
-         now repeat rewrite assoc.
-Defined.
-
-
-(** Some examples *)
-
-(** List functor *)
-Fixpoint fmapList {A B: Type} (f: A -> B) (l: list A): list B :=
-  match l with
-    | nil       => nil
-    | cons x xs => cons (f x) (fmapList f xs)
-  end.
-
-Definition ListFunctor: Functor CoqCatT CoqCatT.
-Proof. unshelve econstructor.
-       - intros. exact (list X).
-       - intros. cbn in *. intro l.
-         exact (@fmapList a b f l).
-       - repeat intro. now subst.
-       - intros. cbn in *. unfold id.
-         extensionality l.
-         induction l as [ | xl IHxl ]; intros.
-         + now cbn.
-         + cbn in *. now rewrite IHIHxl.
-       - intros. cbn in *. 
-         extensionality l.
-         induction l as [ | xl IHxl ]; intros.
-         + now cbn.
-         + cbn in *. now rewrite IHIHxl.
-Defined.
-*)
 
 (** Some basic functor examples from CIC *)
 

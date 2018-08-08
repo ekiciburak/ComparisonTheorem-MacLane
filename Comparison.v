@@ -52,7 +52,6 @@ Proof. intros C D F G A1 M CK FT GT; split.
            extensionality f.
            now rewrite preserve_comp.
 Qed.
-Check commL.
 
 (** uniqueness of the comparison functor L *)
 Lemma uniqueL: forall
@@ -121,7 +120,6 @@ Proof. intros C D F G A1 M CK FT GT A2 R H.
          rewrite <- assoc, comm_diag.
          now rewrite assoc, ob2, identity_f.
 Qed.
-Check uniqueL.
 
 (** Mac Lane's comparison theorem for the Kleisli Construction *)
 Theorem ComparisonMacLane: forall
@@ -190,7 +188,6 @@ Proof. intros C D F G A1 cM cKC FD GD A2; split.
            extensionality f.
            now rewrite preserve_comp.
 Qed.
-Check commduL.
 
 (** uniqueness of the dual comparison functor duL *)
 Lemma uniqueduL: forall
@@ -260,7 +257,6 @@ Proof. intros C D F G A1 cM cKC FD GD A2 R H.
          rewrite assoc, <- comm_diag.
          now rewrite <- assoc, ob1, f_identity.
 Qed.
-Check uniqueduL.
 
 (** Mac Lane's comparison theorem for the coKleisli Construction *)
 Theorem duaLComparisonMacLane: forall
