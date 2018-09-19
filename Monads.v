@@ -138,7 +138,7 @@ Proof. destruct cM. destruct eps0, delta0. simpl in *.
 Defined.
 Check coKleisli_Category.
 
-
+(*
 Class TAlgebra (C: Category)
                (T: Functor C C)
                (M: Monad C T) :=
@@ -243,15 +243,83 @@ Proof. unshelve econstructor.
          now rewrite f_identity.
 Defined.
 Check EilenbergMooreCategory.
+*)
 
-(*
 Generalizable All Variables.
 Set Primitive Projections.
 Set Universe Polymorphism.
 Unset Transparent Obligations.
 
+Definition TAlgebra (C: Category) (T: Functor C C) (M: Monad C T) (a: @obj C) :=
+  { alg_map: arrow a (fobj T a) |
+                alg_map o (trans eta a) = (@identity C a) /\ 
+                alg_map o (fmap T (alg_map)) = alg_map o (trans mu a) }.
 
-Class TAlgebra (C: Category)
+
+(** eqTA with JMeq *)
+Lemma eqTA: forall
+                  (C      : Category)
+                  (T      : Functor C C)
+                  (M      : Monad C T)
+                  (a b    : @obj C)
+                  (TA1 TA2: TAlgebra C T M a), 
+                  JMeq (proj1_sig TA1) (proj1_sig TA2) -> TA1 = TA2.
+Proof. intros.
+       destruct TA1, TA2. cbn in *. subst. f_equal.
+       intros. subst. easy.
+       now destruct (proof_irrelevance _ a0 a1).
+Qed.
+
+Definition TAlgebraMap (C: Category) (T: Functor C C) 
+                       (M: Monad C T) (a b: @obj C)
+                       (TA1: TAlgebra C T M b) 
+                       (TA2: TAlgebra C T M a) :=
+  { tf  : @arrow C b a | (proj1_sig TA1) o fmap T tf = tf o (proj1_sig TA2) }.
+
+Lemma eqTAM: forall
+                  (C      : Category)
+                  (T      : Functor C C)
+                  (M      : Monad C T)
+                  (a b    : @obj C)
+                  (TA1    : TAlgebra C T M a)
+                  (TA2    : TAlgebra C T M b)
+                  (ta1 ta2: TAlgebraMap C T M b a TA1 TA2)
+                  (mapEq  : (proj1_sig ta1) = (proj1_sig ta2)), ta1 = ta2.
+Proof. intros. 
+       destruct ta1, ta2, TA1, TA2, T, M. cbn in *.
+       subst. f_equal.
+       destruct (proof_irrelevance _ e e0).
+       easy.
+Qed.
+
+Program Definition EilenbergMooreCategory (C: Category) (T: Functor C C) (M: Monad C T): Category.
+Proof. unshelve econstructor.
+       - exact { a: @obj C & TAlgebra C T M a}.
+       - intros.
+         exact (TAlgebraMap C T M (projT1 X0) (projT1 X) (projT2 X) (projT2 X0)).
+       - intros. cbn. destruct a. cbn.
+         unshelve econstructor.
+         + exact (identity x).
+         + now rewrite preserve_id, f_identity, identity_f.
+       - cbn. intros. destruct a, b, c.
+         unshelve econstructor.
+         + destruct X, X0. cbn in *.
+           exact (x2 o x3).
+         + cbn. destruct X, X0.
+           rewrite preserve_comp. cbn in *.
+           rewrite assoc, e.
+           now rewrite <- assoc, e0, assoc.
+       - cbn. repeat intro. now subst.
+       - cbn. intros. destruct a, b, c, d. cbn in *.
+         apply eqTAM. cbn. destruct h,g,f. now rewrite assoc.
+       - intros. destruct a, b. cbn in *.
+         apply eqTAM. cbn. destruct f. now rewrite identity_f.
+       - intros. destruct a, b. cbn in *.
+         apply eqTAM. cbn. destruct f. now rewrite f_identity.
+Defined. 
+
+(*
+Record TAlgebra (C: Category)
                (T: Functor C C)
                (M: Monad C T)
                (a: @obj C) :=
@@ -277,15 +345,15 @@ Proof. intros.
        now destruct (proof_irrelevance _ alg_act0 alg_act1).
 Qed.
 
-Class TAlgebraMap (C      : Category)
+Record TAlgebraMap (C      : Category)
                   (T      : (@Functor C C))
                   (M      : Monad C T)
                   (a b    : @obj C)
-                  (TA1    : TAlgebra C T M a) 
-                  (TA2    : TAlgebra C T M b) :=
+                  (TA1    : TAlgebra C T M b) 
+                  (TA2    : TAlgebra C T M a) :=
   {
      tf  : @arrow C b a;
-     malg: (@alg_map C T M b TA2) o fmap T tf = tf o (@alg_map C T M a TA1)
+     malg: (@alg_map C T M b TA1) o fmap T tf = tf o (@alg_map C T M a TA2)
   }.
 Check TAlgebraMap.
 
@@ -297,8 +365,8 @@ Lemma eqTAM: forall
                   (a b    : @obj C)
                   (TA1    : TAlgebra C T M a)
                   (TA2    : TAlgebra C T M b)
-                  (ta1 ta2: TAlgebraMap C T M a b TA1 TA2)
-                  (mapEq  : (@tf C T M a b TA1 TA2 ta1) = (@tf C T M a b TA1 TA2 ta2)),
+                  (ta1 ta2: TAlgebraMap C T M b a TA1 TA2)
+                  (mapEq  : (@tf C T M b a TA1 TA2 ta1) = (@tf C T M b a TA1 TA2 ta2)),
                    ta1 = ta2.
 Proof. intros. 
        destruct ta1, ta2, TA1, TA2, T, M. cbn in *.
@@ -307,41 +375,33 @@ Proof. intros.
        easy.
 Qed.
 
+Check existT.
 
-Program Definition EilenbergMooreCategory (C: Category) {a: @obj C} (T: Functor C C) (M: Monad C T): Category.
+Program Definition EilenbergMooreCategory (C: Category) (T: Functor C C) (M: Monad C T): Category.
 Proof. unshelve econstructor.
-       - exact (TAlgebra C T M a).
-       - intros TA1 TA2.
-         exact (TAlgebraMap C T M a a TA1 TA2).
+       - exact { a: @obj C & TAlgebra C T M a}.
        - intros.
-         cbn in *.
+         exact (TAlgebraMap C T M (projT1 X0) (projT1 X) (projT2 X) (projT2 X0)).
+       - intros. cbn. destruct a.
          unshelve econstructor.
-         + destruct a. cbn in *.
-           exact (identity (alg_obj0)).
-         + cbn in *. now rewrite !preserve_id, f_identity, identity_f.
-       - intros.
-         cbn in *.
+         + exact (identity x).
+         + now rewrite preserve_id, f_identity, identity_f.
+       - cbn. intros. destruct a, b, c.
          unshelve econstructor.
-         + destruct a, b, c, X, X0. cbn in *.
+         + destruct X, X0.
            exact (tf0 o tf1).
-         + cbn in *.
-           rewrite preserve_comp.
-           destruct T, M, eta0, mu0, a, b, c, X, X0. cbn in *.
-           rewrite assoc.
-           rewrite malg0. rewrite <- assoc. rewrite malg1.
-           now rewrite assoc.
-       - repeat intro. subst. easy.
-       - cbn in *. intros.
-         apply eqTAM. cbn in *. 
-         now rewrite assoc.
-       - cbn in *. intros.
-         apply eqTAM. cbn.
-         now rewrite identity_f.
-      -  cbn in *. intros.
-         apply eqTAM. cbn in *.
-         now rewrite f_identity.
+         + cbn. destruct X, X0.
+           rewrite preserve_comp. cbn in *.
+           rewrite assoc, malg0.
+           now rewrite <- assoc, malg1, assoc.
+       - cbn. repeat intro. now subst.
+       - cbn. intros. destruct a, b, c, d. cbn in *.
+         apply eqTAM. cbn. now rewrite assoc.
+       - intros. destruct a, b. cbn in *.
+         apply eqTAM. cbn. now rewrite identity_f.
+       - intros. destruct a, b. cbn in *.
+         apply eqTAM. cbn. now rewrite f_identity.
 Defined.
-Check EilenbergMooreCategory.
 *)
 
 Definition aFT {C: Category}
@@ -453,6 +513,38 @@ Proof. unshelve econstructor.
        - intro a. cbn in *.
          unshelve econstructor.
          + exact (fobj T a).
+         + unshelve econstructor.
+           ++ exact (trans (@mu _ _ M) a).
+           ++ clear EMC.
+              destruct M. cbn in *.
+              now specialize (comm_diagram2_b4 a).
+       - intros. cbn in *.
+         unshelve econstructor.
+         + exact (fmap T f).
+         + destruct M. cbn in *.
+           destruct eta0, mu0. cbn in *.
+           now rewrite comm_diag0.
+       - repeat intro. now subst.
+       - intros. cbn in *.
+         apply eqTAM. cbn.
+         now rewrite !preserve_id.
+       - intros. cbn in *.
+         apply eqTAM. cbn.
+         now rewrite !preserve_comp.
+Defined.
+Check LAEM.
+
+(*
+Definition LAEM {C D: Category}
+                (F  : Functor C D)
+                (G  : Functor D C)
+                (T  := Compose_Functors F G)
+                (M  : Monad C T)
+                (EMC:= (EilenbergMooreCategory C T M)): Functor C EMC.
+Proof. unshelve econstructor.
+       - intro a. cbn in *.
+         unshelve econstructor.
+         + exact (fobj T a).
          + exact (trans (@mu _ _ M) a).
          + clear EMC.
            destruct M. cbn in *.
@@ -474,7 +566,28 @@ Proof. unshelve econstructor.
          now rewrite !preserve_comp.
 Defined.
 Check LAEM.
+*)
 
+(** right adjoint functor that acts as G_T *)
+Definition RAEM {C D: Category}
+                (F  : Functor C D)
+                (G  : Functor D C)
+                (T  := Compose_Functors F G)
+                (M  : Monad C T)
+                (EMC:= (EilenbergMooreCategory C T M)): Functor EMC C.
+Proof. unshelve econstructor.
+       - intros. cbn in *.
+         destruct X. exact x.
+       - intros. cbn in *.
+         destruct a, b, f. cbn in *.
+         exact x1.
+       - repeat intro. now subst.
+       - intros. destruct a. now cbn in *.
+       - intros. cbn in *.
+         destruct a, b, c, f, g. now cbn in *.
+Defined.
+Check RAEM.
+(*
 (** right adjoint functor that acts as G_T *)
 Definition RAEM {C D: Category}
                 (F  : Functor C D)
@@ -494,6 +607,7 @@ Proof. unshelve econstructor.
          destruct a, b, c, f, g. now cbn in *.
 Defined.
 Check RAEM.
+*)
 
 Definition cLA {C D: Category}
                (F  : Functor C D)

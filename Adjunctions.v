@@ -907,22 +907,23 @@ Proof. intros.
            destruct M, eta. cbn in *.
            now rewrite comm_diag.
        - unshelve econstructor.
-         + intros. cbn in *.
+         + intros. destruct a. cbn in *.
            unshelve econstructor.
-           ++ destruct a. cbn in *.
-              exact alg_map.
-           ++ destruct a. cbn in *.
-              now rewrite alg_act.
+           ++ destruct t. cbn in *.
+              exact x0.
+           ++ destruct t. cbn in *.
+              destruct a.
+              now rewrite H0.
          + intros. destruct a, b, f.
-           cbn in *. apply eqTAM. cbn.
-           now rewrite malg.
+           cbn in *. apply eqTAM. cbn in *.
+           easy.
        - intros. cbn in *.
          apply eqTAM. cbn.
          unfold T in *.
          destruct M, T. cbn in *.
          now rewrite comm_diagram2_b1.
        - intros. cbn in *.
-         destruct a. now cbn in *.
+         destruct a, t. now cbn in *.
 Defined.
 
 Theorem mon_emhomadj: forall
@@ -977,12 +978,12 @@ Definition invK: forall
 Proof. intros.
        unshelve econstructor.
        - intro a. cbn in *.
-         destruct a. exact (fobj F alg_obj).
+         destruct a. exact (fobj F x).
        - intros a b f. destruct a, b, f. cbn in *.
-         exact (fmap F tf).
+         exact (fmap F x1).
        - repeat intro. now subst.
-       - intros. cbn in *. now rewrite preserve_id.
-       - intros. cbn in *. now rewrite preserve_comp.
+       - intros. destruct a. cbn in *. now rewrite preserve_id.
+       - intros. destruct a, b, c. cbn in *. destruct g, f. now rewrite preserve_comp.
 Defined.
 Check invK.
 
@@ -998,23 +999,19 @@ Proof. intros.
        - intro a. cbn in *.
          + unshelve econstructor.
            ++ exact (fobj G a).
-           ++ cbn in *. destruct A1, unit0, counit0. cbn in *.
-              unfold id in *.
-              exact (fmap G (trans0 a)).
-           ++ cbn in *.
-              destruct A1, unit0, counit0. cbn in *.
-              now rewrite ob4.
-           ++ cbn in *.
-              destruct A1, unit0, counit0. cbn in *.
-              rewrite <- !preserve_comp.
-              now rewrite <- comm_diag0.
+           ++ unshelve econstructor.
+              +++ exact (fmap G (trans (@counit _ _ _ _ A1) a)).
+              +++ split. now rewrite (@ob2 _ _ _ _ A1).
+                  destruct A1, counit0. cbn in *.
+                  rewrite <- !preserve_comp.
+                  now rewrite <- comm_diag.
        - intros. cbn in *.
          + unshelve econstructor.
-           ++ cbn in *. exact (fmap G f).
+           ++ exact (fmap G f).
            ++ cbn in *.
-              destruct A1, unit0, counit0. cbn in *.
+              destruct A1, counit0. cbn in *.
               rewrite <- preserve_comp.
-              rewrite <- comm_diag0.
+              rewrite <- comm_diag.
               now rewrite preserve_comp.
        - repeat intro.
          now subst.

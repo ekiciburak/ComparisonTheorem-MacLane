@@ -83,6 +83,21 @@ Proof. intros. split. intros. destruct nt1, nt2, F, G.
        intros. rewrite H. easy.
 Qed.
 
+Class Cone (C D: Category) (F: Functor C D): Type := mkCone
+  {
+     cobj: @obj D;
+     cobl: NaturalTransformation (ConstantFunctor C D cobj) F
+  }.
+
+Class Limit (C D: Category) (F: Functor C D): Type := mkLimit
+ {
+    limc : Cone C D F;
+    limob: forall (a b: @obj C) (Cn: Cone C D F), exists !(u: arrow (@cobj C D F limc) (@cobj C D F Cn)),
+            trans (@cobl C D F limc) a o u = trans (@cobl C D F Cn) a /\
+            trans (@cobl C D F limc) b o u = trans (@cobl C D F Cn) b 
+ }.
+
+Definition has_Limits (D: Category) := forall (C: Category) (F: Functor C D), Limit C D F.
 
 Definition FunctorCategory (C D: Category): Category.
 (* Proof. refine(@mk_Category (@Functor C D F)

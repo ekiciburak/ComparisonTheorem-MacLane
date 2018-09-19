@@ -8,23 +8,12 @@ Arguments trans {_} {_} {_} {_} _ _.
 Arguments Compose_NaturalTransformations {_ _ _ _ _ } _ _.
 Arguments Compose_NaturalTransformations_H {_ _ _ _ _ } _ _.
 
+Require Import Coq.Program.Equality.
 
-Lemma Khelper: forall
-               {C D    : Category}
-               (F      : Functor C D)
-               (G      : Functor D C) 
-               (A1     : Adjunction F G),
-               let M   := (adj_mon F G A1) in
-               let FTL := (LAEM F G M) in
-               (forall a b : obj,arrow b a -> arrow (fobj (Compose_Functors F (K F G A1)) b) (fobj (Compose_Functors F (K F G A1)) a)) =
-               (forall a b : obj, arrow b a -> arrow (fobj FTL b) (fobj FTL a)).
-Proof. intros.
-       assert (fobj (Compose_Functors F (K F G A1)) = fobj FTL).
-       {   extensionality a.
-           apply eqTA2; easy.
-       }
-       now rewrite H.
-Defined.
+Generalizable All Variables.
+Set Primitive Projections.
+Set Universe Polymorphism.
+Unset Transparent Obligations.
 
 Lemma K_functor: forall
                {C D    : Category}
@@ -33,11 +22,11 @@ Lemma K_functor: forall
                (A1     : Adjunction F G),
                let M   := (adj_mon F G A1) in
                let EMC := (EilenbergMooreCategory C (Compose_Functors F G) M) in
-               let FTL := (LAEM F G M) in
-               let GTL := (RAEM F G M) in
+               let FT  := (LAEM F G M) in
+               let GT  := (RAEM F G M) in
                let A2  := (mon_emadj F G M) in 
-                 (Compose_Functors (K F G A1) GTL) = G /\ (Compose_Functors F (K F G A1)) = FTL.
-Proof. intros C D F G A1 M EMC FTL GTL A2.
+                 (Compose_Functors (K F G A1) GT) = G /\ (Compose_Functors F (K F G A1)) = FT.
+Proof. intros C D F G A1 M EMC FT GT A2.
        split.  cbn in *.
        apply F_split2. easy.
 
@@ -58,20 +47,101 @@ Proof. intros C D F G A1 M EMC FTL GTL A2.
        rewrite H0. easy.
 
        apply F_split2.
+       cbn. unfold id in *.
            extensionality a.
-           apply eqTA2; easy.
-       assert (H: fobj (Compose_Functors F (K F G A1)) = fobj FTL).
+           apply f_equal.
+           apply eqTA; easy.
+       assert (H: fobj (Compose_Functors F (K F G A1)) = fobj FT).
+       cbn. unfold id in *.
            extensionality a.
-           apply eqTA2; easy.
+           apply f_equal.
+           apply eqTA; easy.
+
+       apply eq_dep_id_JMeq.
+       apply EqdepFacts.eq_sigT_iff_eq_dep.
+       apply eq_existT_uncurried.
 
        assert ((forall a b : obj,
-       Categories.arrow b a -> Categories.arrow (fobj (Compose_Functors F (K F G A1)) b) (fobj (Compose_Functors F (K F G A1)) a)) =
-       (forall a b : obj, Categories.arrow b a -> Categories.arrow (fobj FTL b) (fobj FTL a)) ).
+       arrow b a -> arrow (fobj (Compose_Functors F (K F G A1)) b) 
+       (fobj (Compose_Functors F (K F G A1)) a)) =
+       (forall a b : obj, arrow b a -> arrow (fobj FT b) (fobj FT a)) ).
        { now rewrite H. }
- 
-       apply eq_dep_id_JMeq.
-       apply EqdepFacts.eq_sigT_iff_eq_dep. 
-       apply eq_existT_uncurried.
+
+      exists H0.
+      unfold eq_rect.
+      assert (H0 = eq_refl).
+               {  specialize (UIP_refl _  
+                  (forall a b : obj, arrow b a -> 
+                    arrow (fobj FT b) (fobj FT a))); intros.
+                  now specialize (H1 H0).
+               }
+      rewrite H1.
+      cbn.
+
+      extensionality x.
+      extensionality y.
+      extensionality f.
+      now apply subset_eq_compat.
+Qed.
+
+Lemma K_unique: forall
+               {C D    : Category}
+               (F      : Functor C D)
+               (G      : Functor D C) 
+               (A1     : Adjunction F G),
+               let M   := (adj_mon F G A1) in
+               let EMC := (EilenbergMooreCategory C (Compose_Functors F G) M) in
+               let FT  := (LAEM F G M) in
+               let GT  := (RAEM F G M) in
+               let A2  := (mon_emadj F G M) in
+                 forall R : D → EMC, Compose_Functors R GT = G /\
+                                     Compose_Functors F R = FT -> (K F G A1) = R.
+Proof. intros C D F G A1 M CK FT GT A2 R H.
+       assert (H1: (Compose_Functors (K F G A1) GT) = G /\ (Compose_Functors F (K F G A1)) = FT).
+       specialize (K_functor F G A1); intros. apply H0.
+       destruct H as (Ha, Hb).
+       destruct H1 as (H1a, H1b).
+       apply F_split2.
+       - extensionality a.
+
+         rewrite <- H1b in Hb.
+         assert (H2: fobj (Compose_Functors F R) = fobj (Compose_Functors F (K F G A1))).
+         rewrite Hb. easy.
+         rewrite <- H1a in Ha.
+         assert (H3: fobj (Compose_Functors R GT) = fobj (Compose_Functors (K F G A1) GT)).
+         rewrite Ha. easy.
+         cbn in H3.
+           pose proof (fun x => eq_ind_r (fun f => f x = _ x ) eq_refl H3) as H3';
+           cbv beta in H3'.
+         specialize (H3' a).
+         cbn in H3'.
+         destruct (fobj R a).
+         subst.
+apply eq_existT_uncurried.
+exists (eq_refl (fobj G a)).
+unfold eq_rect.
+unfold TAlgebra in t.
+destruct t.
+apply subset_eq_compat.
+destruct a0.
+cbn in H0.
+unfold M.
+destruct A1, counit, unit.
+cbn in *.
+clear Ha Hb H1a H1b.
+
+assert
+(
+trans a o fmap F (x o (fmap G (fmap F x) o trans0 (fobj G (fobj F (fobj G a)))) ) = 
+trans a o fmap F (x o (fmap G (trans (fobj F (fobj G a))) o trans0 (fobj G (fobj F (fobj G a)))))
+). admit.
+rewrite !comm_diag0 in H1.
+rewrite !assoc in H1.
+rewrite <- H0 in H1.
+rewrite <- !assoc in H1.
+rewrite comm_diag0 in H1.
+rewrite !preserve_comp in H1.
+rewrite !assoc in H1.
 Admitted.
 
 Lemma commL: forall

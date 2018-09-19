@@ -4,8 +4,8 @@ Class Functor (C D: Category): Type :=
   mk_Functor
   {
     fobj            : @obj C -> @obj D;
-    fmap            : forall {a b: @obj C} (f: arrow b a), (arrow (fobj b) (fobj a));
-    fmapP           : forall x y, Proper (eq ==> eq) (@fmap x y);
+    fmap            : forall {a b: @obj C} (f: arrow b a), arrow (fobj b) (fobj a);
+    fmapP           :> forall x y, Proper (eq ==> eq) (@fmap x y);
     preserve_id     : forall {a: @obj C}, fmap (@identity C a) = (@identity D (fobj a));
     preserve_comp   : forall {a b c: @obj C} (g : @arrow C c b) (f: @arrow C b a),
                         fmap (g o f) = (fmap g) o (fmap f)
@@ -44,6 +44,15 @@ Defined.
 Definition Id {C: Category}: @Functor C C.
 Proof. refine (@mk_Functor C C id (fun a b f => f) _ _ _);
        intros; now unfold id.
+Defined.
+
+Definition ConstantFunctor (C D: Category) (a: @obj D): Functor C D.
+Proof. unshelve econstructor.
+       - exact (fun _ => a).
+       - cbn. intros. exact (identity a).
+       - repeat intro. now subst.
+       - cbn. easy.
+       - cbn. rewrite f_identity. easy.
 Defined.
 
 (** sameness of Functors, inspired by Amin Timany *)
