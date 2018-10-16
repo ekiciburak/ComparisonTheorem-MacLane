@@ -1,4 +1,10 @@
-Require Export Comparison.
+Require Import ECat.Imports.
+Require Import ECat.Category.
+Require Import ECat.Functor.
+Require Import ECat.NaturalTransformation.
+Require Import ECat.Monad.
+Require Import ECat.Adjunction.
+Require Import ECat.Comparison.
 
 Lemma AnniliationOfDualAdjunctions: forall
                 {C   : Category}

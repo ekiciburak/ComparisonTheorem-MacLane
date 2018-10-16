@@ -1,6 +1,7 @@
-Require Export Category.
+Require Import ECat.Imports.
+Require Import ECat.Category.
 
-Class Functor (C D: Category): Type :=
+Polymorphic Cumulative Class Functor (C D: Category): Type :=
   mk_Functor
   {
     fobj            : @obj C -> @obj D;
@@ -96,12 +97,12 @@ Defined.
 (** the 2-category Cat *)
 Definition Cat: Category.
 Proof. unshelve econstructor.
-       - exact Category.
-       - intros C D. exact (Functor C D).
-       - intro C. exact (@IdFunctor C).
+       - exact (Category: Type).
+       - intros C D. exact (Functor C D: Type).
+       - intro C. cbn in *. exact (@IdFunctor C).
        - intros E D C F G. exact (Compose_Functors F G).
        - repeat intro. now subst.
-       - intros D C B A F G H. 
+       - intros D C B A F G H. cbn in *. 
          exact (FunctorCompositionAssoc F G H).
        - intros D C F. exact (ComposeIdl F).
        - intros D C F. exact (ComposeIdr F).

@@ -1,4 +1,9 @@
-Require Export Adjunction.
+Require Import ECat.Imports.
+Require Import ECat.Category.
+Require Import ECat.Functor.
+Require Import ECat.NaturalTransformation.
+Require Import ECat.Monad.
+Require Import ECat.Adjunction.
 
 Arguments fmap {_} {_} _ {_} {_} _.
 Arguments fobj {_} {_} _ _.

@@ -1,4 +1,6 @@
-Require Export Functor.
+Require Import ECat.Imports.
+Require Import ECat.Category.
+Require Import ECat.Functor.
 
 Arguments Compose_Functors {_} {_} {_} _ _.
 Arguments fmap {_} {_} _ {_} {_} _.

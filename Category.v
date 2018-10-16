@@ -1,8 +1,6 @@
-Require Export Imports.
+Require Import ECat.Imports.
 
-Set Universe Polymorphism.
-
-Polymorphic Cumulative Class Category: Type :=
+Polymorphic Cumulative Class Category: Type:=
  mk_Category 
  {
      obj       : Type;
@@ -77,6 +75,20 @@ Defined.
 Notation "C × D ":= (@Product_Category C D) (at level 40, left associativity).
 Notation "C ^op" := (@Dual_Category C) (at level 40, left associativity).
 
+(*
+Definition LocallySmallCategory@{i j}: Category@{i j}.
+Proof. unshelve econstructor.
+       - exact (Type@{j}: Type@{i}).
+       - intros A B. exact (A -> B: Type@{j}).
+       - intros A pA. exact (pA).
+       - intros A B C g f. cbn in *.
+         intro pC. now apply f, g.
+       - repeat intro. now subst.
+       - now cbn.
+       - now cbn.
+       - now cbn.
+Defined.
+*)
 
 (** Coq Universes as categories *)
 Notation CoqCat U :=

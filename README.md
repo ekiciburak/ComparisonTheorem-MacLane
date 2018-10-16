@@ -2,6 +2,7 @@
 
 Mac Lane's Comparison Theorem for the (co)Kleisli Construction in Coq.
 
+- `coq_makefile -f _Coqproject -o Makefile` to create the makefile
 - `make` to compile with `coqc 8.8.1`, `8.8.0` or `8.7.2`.
 -------------
 ## Sources   
@@ -12,3 +13,5 @@ Mac Lane's Comparison Theorem for the (co)Kleisli Construction in Coq.
 * Adjunction.v: Implements the adjunction class, includes the formal proofs of `a (co)monad gives a (co)Kleisli adjunction` and `an adjunction gives a monad`
 * Comparison.v: Includes the `comparison functor L` and the proof of the `comparison theorem for the Kleisli construction`
 * UseCase.v: Includes the use case of the comparison theorem where a Kleisli adjunction followed by coKleils adjunction annihilate each other through the comparison functor.
+
+* eqivalence.v: Shows the equivalence between the library by Timany and ours. This concerns the overlapping parts.
