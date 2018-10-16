@@ -1,0 +1,11 @@
+Imports.v
+Category.v
+Functor.v
+NaturalTransformation.v
+Monad.v
+Adjunction.v
+Comparison.v
+UseCase.v
+
+-Q . ECat
+
