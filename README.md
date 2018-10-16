@@ -16,4 +16,5 @@ The library has been checked to compile fine with `coqc 8.8.2`, `8.8.1`, `8.8.0`
 * Comparison.v: Includes the `comparison functor L` and the proof of the `comparison theorem for the Kleisli construction`
 * UseCase.v: Includes the use case of the comparison theorem where a Kleisli adjunction followed by coKleils adjunction annihilate each other through the comparison functor.
 
-* eqivalence.v: Shows the equivalence between the library by Timany and ours. This concerns the overlapping parts.
+* eqivalence.v: Shows the equivalence between the library by Timany and ours. This concerns the overlapping parts. 
+  *Please do not forget to modify the `Add LoadPath` vernacs providing the local paths to the libraries.*
