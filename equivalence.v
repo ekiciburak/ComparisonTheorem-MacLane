@@ -4,7 +4,7 @@ From Categories Require Import Category Functor NatTrans.
 Require Import Coq.Logic.FunctionalExtensionality.
 Require Import Coq.Logic.ProofIrrelevance.
 
-Add LoadPath "/PATH/to/oru/library" as ECat.
+Add LoadPath "/PATH/to/our/library" as ECat.
 From ECat Require Import Category Functor NaturalTransformation.
 
 Notation catE := ECat.Category.Category.

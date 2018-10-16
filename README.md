@@ -2,8 +2,10 @@
 
 Mac Lane's Comparison Theorem for the (co)Kleisli Construction in Coq.
 
-- `coq_makefile -f _Coqproject -o Makefile` to create the makefile
-- `make` to compile with `coqc 8.8.1`, `8.8.0` or `8.7.2`.
+The library has been checked to compile fine with `coqc 8.8.2`, `8.8.1`, `8.8.0` and `8.7.2`.
+
+- `coq_makefile -f _CoqProject -o Makefile` to create the Makefile
+- `make` to compile
 -------------
 ## Sources   
 * Category.v: Implements the category class, includes some example categories. I.e., Coq's prop as a category of propositional formulas and entailements
