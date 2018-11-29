@@ -6,6 +6,13 @@ Require Import ECat.Monad.
 Require Import ECat.Adjunction.
 Require Import ECat.Comparison.
 
+Arguments fmap {_} {_} _ _ _ _.
+Arguments fobj {_} {_} _ _.
+
+Class Faithful (C D: Category) (F : Functor C D) := {
+  fmap_inj {x y} (f g: arrow y x): fmap F _ _ f = fmap F _ _ g -> f = g
+}.
+
 Lemma AnniliationOfDualAdjunctions: forall
                 {C   : Category}
                 (D   : Functor C C)
@@ -18,12 +25,13 @@ Lemma AnniliationOfDualAdjunctions: forall
                 exists !L: Functor KC C, 
                   Compose_Functors (FT (Compose_Functors (FD D cM) (GD D cM)) (adj_mon (FD D cM) (GD D cM) cKA)) L = FD D cM /\
                   Compose_Functors L (GD D cM) = GT (Compose_Functors (FD D cM) (GD D cM)) (adj_mon (FD D cM) (GD D cM) cKA) /\
-                  Compose_Functors (Compose_Functors (GD D cM) (FT (Compose_Functors (FD D cM) (GD D cM)) (adj_mon (FD D cM) (GD D cM) cKA))) L = D.
+                  Compose_Functors (Compose_Functors (GD D cM) (FT (Compose_Functors (FD D cM) (GD D cM)) (adj_mon (FD D cM) (GD D cM) cKA))) L = D  /\
+                  Faithful _ _ L.
 Proof. intros.
        exists (Comparison.L (FD D cM) (GD D cM) cKA).
        split. split. eapply commL.
        split. eapply commL.
-       apply F_split. cbn. easy.
+       split. apply F_split. cbn. easy.
        cbn.
        apply eq_dep_id_JMeq.
        apply EqdepFacts.eq_sigT_iff_eq_dep.
@@ -45,8 +53,26 @@ Proof. intros.
        destruct delta as (tdelta, cc6). cbn in *.
        rewrite <- assoc, cc6.
        now rewrite assoc, cc3, identity_f.
+       (** Faithfulness of the functor L *)
+       intros.
+       unshelve econstructor.
+       intros. cbn in H.
+       destruct cM as (eps, delta, cc1, cc2, cc3, cc4). cbn in *.
+       unfold id in *.
+       clear cKC cKA M KC KA.
+       destruct eps, delta. cbn in *.
+       do 2 rewrite assoc in H.
+       rewrite <- !comm_diag, <- !assoc in H.
+       now rewrite !cc3, !f_identity in H.
+       (**unicity of L *)
        intros.
        apply uniqueL. split.
        destruct H as (Ha, (Hb, Hc)). apply Ha.
        destruct H as (Ha, (Hb, Hc)). apply Hb.
 Qed.
+
+
+
+
+
+
