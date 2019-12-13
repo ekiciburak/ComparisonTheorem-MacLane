@@ -484,6 +484,34 @@ Proof. unshelve econstructor.
 Defined.
 Check GT.
 
+Theorem mon_emadj: ∏
+                   {C  : Category}
+                   {T  : Functor C C}
+                   (M  : Monad C T), Adjunction (FT M) (GT M).
+Proof. intros.
+       unshelve econstructor.
+       - unshelve econstructor.
+         + intro X. exact (trans (eta M) X).
+         + intros X Y f.
+           specialize (@comm_diag _ _ _ _ (eta M) _ _ f); intro H.
+           cbn in H. exact H.
+       - unshelve econstructor.
+         + intro TA. cbn in TA.
+           unshelve econstructor.
+           ++ exact (proj1_sig (projT2 TA)).
+           ++ destruct TA as (X, (tf, (cc0, cc1))). cbn in *.
+              now rewrite <- cc1.
+         + intros a b f. destruct a, b, f.
+           apply eqTAM. cbn in *.
+           easy.
+       - intro a.
+         apply eqTAM. cbn.
+         specialize (@comm_diagram2_b1 _ _ M a); intro H.
+         cbn in *. unfold id in *. now rewrite H.
+       - intro a. cbn.
+         destruct a, t. now cbn in *.
+Defined.
+
 (** every adjunction gives raise to a monad *)
 Theorem adj_mon: ∏ {C1 C2: Category}(F: Functor C1 C2)(G: Functor C2 C1),
                  Adjunction F G -> Monad C1 (Compose_Functors F G).
@@ -551,35 +579,6 @@ Proof. intros C1 C2 F G A.
          now rewrite H2, preserve_id.
 Defined.
 Check adj_comon.
-
-
-Theorem mon_emadj: ∏
-                   {C  : Category}
-                   {T  : Functor C C}
-                   (M  : Monad C T), Adjunction (FT M) (GT M).
-Proof. intros.
-       unshelve econstructor.
-       - unshelve econstructor.
-         + intro X. exact (trans (eta M) X).
-         + intros X Y f.
-           specialize (@comm_diag _ _ _ _ (eta M) _ _ f); intro H.
-           cbn in H. exact H.
-       - unshelve econstructor.
-         + intro TA. cbn in TA.
-           unshelve econstructor.
-           ++ exact (proj1_sig (projT2 TA)).
-           ++ destruct TA as (X, (tf, (cc0, cc1))). cbn in *.
-              now rewrite <- cc1.
-         + intros a b f. destruct a, b, f.
-           apply eqTAM. cbn in *.
-           easy.
-       - intro a.
-         apply eqTAM. cbn.
-         specialize (@comm_diagram2_b1 _ _ M a); intro H.
-         cbn in *. unfold id in *. now rewrite H.
-       - intro a. cbn.
-         destruct a, t. now cbn in *.
-Defined.
 
 Definition KT: ∏ {C D: Category} (F: Functor C D) (G: Functor D C)(A: Adjunction F G),
                 let M   := adj_mon F G A in
