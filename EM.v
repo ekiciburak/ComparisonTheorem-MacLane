@@ -658,6 +658,18 @@ Proof. intros C D F G A M EMC; split.
            now apply subset_eq_compat.
 Qed.
 
+Lemma K_unique: ∏
+               {C D    : Category}
+               (F      : Functor C D)
+               (G      : Functor D C) 
+               (A1     : Adjunction F G),
+               let M   := (adj_mon F G A1) in
+               let EMC := (EilenbergMooreCategory M) in
+               let A2  := (mon_emadj M) in
+                 ∏ R : Functor D EMC, Compose_Functors R (GT M) = G /\
+                                           Compose_Functors F R = (FT M) -> (KT F G A1) = R.
+Admitted.
+
 Class MonadicFunctor {C D: Category} (U: Functor D C): Type :=
   mk_MF
   { 
@@ -684,43 +696,9 @@ Definition iffT (A B : Type) := ((A -> B) * (B -> A))%type.
 
 Lemma BeckMonadicity: ∏ {C D: Category} {a b: @obj D} (f g: arrow a b) (U: Functor D C),
   MonadicFunctorBeck U -> MonadicFunctor U.
-Proof. intros C D a b f g U (F, ((A, ir), pe)).
-       specialize (pe a b f g).
-       destruct pe as (usp, hce, pce).
-       unfold USplitPairs in usp.
-       destruct hce as (x, e, (DCOeq1, DCQeq2)).
-       destruct pce as (UPCOeq1, UPCOeq2). cbn in *.
-       destruct usp as (hd, s, t, USPeq1, USPeq2, USPeq3).
-       destruct hd as (USPx, USPe, (USPeq4, USPeq5)).
-       cbn in *.
-       specialize (UPCOeq2 USPx USPe USPeq4).
-       specialize (USPeq5 (fobj U x) (fmap U e) UPCOeq1).
-       unfold unique in *.
-(*        destruct UPCOeq2.
-       destruct usp. cbn in *.
-
-       unfold IsomorphismReflecting in ir.
-       unshelve econstructor.
-       - exact F.
-       - exact A.
-       - unshelve econstructor.
-         + intros (X, alpha).
-           exact a.
-         + cbn. intros (X, alpha) (Y, beta) Tf.
-           cbn in *. exact (identity a).
-         + cbn. intros (X, alpha). easy.
-         + cbn. intros (X, alpha) (Y, beta) (Z, gamma) Tf Tg.
-           now rewrite f_identity.
-       - cbn. unshelve econstructor.
-         + cbn. unshelve econstructor.
-           ++ unshelve econstructor.
-              * cbn.
-         + cbn. intros (X, alpha) (Y, beta) (Z, gamma) Tf Tg.
-           now rewrite f_identity. *)
-       
 Admitted.
 
-(*----------------------------------------*)
+(*----------------------------------------------------------------------------------------------------*)
 
 (** Coq Universes as categories *)
 Notation CoqCat U :=
@@ -737,8 +715,8 @@ Program Definition CoqCatP: Category := CoqCat Prop.
 
 (** Some basic functor examples from CIC *)
 
-(** Conjuncton -| Implication example *)
-(** Two adjoint functors Fp and Gp over Prop forming an adjunction *)
+(** Conjuncton -| Implication *)
+(** functors Fp and Gp *)
 Definition fobjFp := fun p q => p /\ q.
 
 Definition fmapFp:=
@@ -768,10 +746,7 @@ Proof. unshelve econstructor.
        - intros. cbn in *. extensionality H. easy.
 Defined.
 
-(** some basic natural transformation examples from CIC *)
-
-(** natural transformations to form an adjunction between
-conjunction and implication of Prop universe *)
+(** natural transformations unit_GpFp and counit_GpFp *)
 Definition unit_GpFp: forall (p: @obj CoqCatP),
   NaturalTransformation (IdF CoqCatP) (Compose_Functors (Fp p) (Gp p)).
 Proof. intro p.
@@ -790,8 +765,7 @@ Proof. intro p.
          destruct pp. easy.
 Defined.
 
-(** a simple adjunction example from CIC:
-conjunction and implication are adjoint operators *)
+(** Fp and Gp are adjoint *)
 Definition FpGp_Adjoint (p: @obj CoqCatP) : Adjunction (Fp p) (Gp p).
 Proof. unshelve econstructor.
        - exact (unit_GpFp p).
@@ -822,8 +796,7 @@ Proof. unshelve econstructor.
          case_eq h; intros; easy.
 Defined.
 
-
-(** natural transformations to from option monad *)
+(** natural transformations *)
 Definition EtaFo: NaturalTransformation (IdF CoqCatT) FunctorO.
 Proof. unshelve econstructor.
        - intros A a. exact (Some a).
@@ -846,7 +819,6 @@ Proof. unshelve econstructor.
          case_eq op. intros op2 H2.
          easy. easy. easy.
 Defined.
-
 
 (** Option monad *)
 Definition Mo: Monad CoqCatT FunctorO.
@@ -893,7 +865,7 @@ Proof. unshelve econstructor.
          case_eq h; intros; easy.
 Defined.
 
-(** natural transformations to from maybe monad *)
+(** natural transformations *)
 Definition fmapFM {A : Type} (i: maybe (maybe A)): maybe A :=
   match i with
     | just _ a => a
@@ -960,7 +932,7 @@ Proof. intro s.
          extensionality st. now destruct X.
 Defined.
 
-(** natural transformations to from state monad *)
+(** natural transformations *)
 Definition EtaFs: forall (s: @obj CoqCatT), NaturalTransformation (IdF CoqCatT) (FunctorS s).
 Proof. intro s.
        unshelve econstructor.
@@ -1007,152 +979,5 @@ Proof. intro s.
          destruct f. easy.
 Defined.
 
-(*----------------------------------------*)
-
-Lemma K_unique: ∏
-               {C D    : Category}
-               (F      : Functor C D)
-               (G      : Functor D C) 
-               (A1     : Adjunction F G),
-               let M   := (adj_mon F G A1) in
-               let EMC := (EilenbergMooreCategory M) in
-               let A2  := (mon_emadj M) in
-                 ∏ R : Functor D EMC, Compose_Functors R (GT M) = G /\
-                                           Compose_Functors F R = (FT M) -> (KT F G A1) = R.
-Proof. intros C D F G A1 M CK A2 R H.
-       assert (H1: (Compose_Functors (KT F G A1) (GT M)) = G /\ (Compose_Functors F (KT F G A1)) = (FT M)).
-       specialize (commKT F G A1); intros. apply H0.
-       destruct H as (Ha, Hb).
-       destruct H1 as (H1a, H1b).
-(*        pose proof Ha as Ha'.
-       pose proof Hb as Hb'. *)
-       apply F_split2.
-       - extensionality A.
-         pose proof H1a as H1a'.
-         pose proof H1b as H1b'.
-         rewrite <- H1b in Hb.
-         assert (H2: fobj (Compose_Functors F R) = fobj (Compose_Functors F (KT F G A1))).
-         rewrite Hb. easy.
-         rewrite <- H1a in Ha.
-         assert (H3: fobj (Compose_Functors R (GT M)) = fobj (Compose_Functors (KT F G A1) (GT M))).
-         rewrite Ha. easy.
-         cbn in H3.
-  
-(* 
-         assert ( fmap R (fmap F (trans (counit A1) A)) =
-                  fmap FT (trans (counit A1) A) ). *)
-
-         cbn in H3.
-           pose proof (fun x => eq_ind_r (fun f => f x = _ x ) eq_refl H3) as H3';
-           cbv beta in H3'.
-         specialize (H3' A).
-         cbn in H3'.
-
-
-
-         destruct (fobj R A).
-         cbn in H3'. subst.
-         cbn in H3.
-         cbn.
-
-apply eq_existT_uncurried.
-exists (eq_refl (fobj G A)).
-unfold eq_rect.
-unfold TAlgebra in t.
-destruct t as (a, (tP, tQ)).
-apply subset_eq_compat.
-cbn in a, tP, tQ.
-assert (Ht: (trans (mu M) (fobj G A)) o
-            (trans (eta M) (fobj G (fobj F (fobj G A)))) 
-              =
-             (identity (fobj G (fobj F (fobj G A)))) ).
-{ 
-specialize (@comm_diagram2_b2 _ _  M (fobj G A)); intro HH.
-easy.
-}
-
-assert (HAb: (fmap G (fmap F (fmap G (trans (counit A1) A)))) o
-             (trans (eta M) (fobj G (fobj F (fobj G A)))) =
-             (identity (fobj G (fobj F (fobj G A)))) 
-).
-Admitted.
-
-(* { cbn.
-  specialize(@ob2 _ _ _ _ A1  A); intro H.
-  cbn in Ht.
-  specialize(@ob1 _ _ _ _ A1  (fobj G A)); intro H2a.
-  specialize (@comm_diagram2_b2 _ _  M (fobj G A)); intro H3a.
-  cbn in H3a.
-  specialize (@comm_diagram2_b1 _ _  M (fobj G A)); intro H4a.
-  cbn in H4a.
-  specialize (@comm_diagram1 _ _  M (fobj G A)); intro H5a.
-  cbn in H5a.
-  specialize (@comm_diagram2 _ _  M (fobj G A)); intro H6a.
-  cbn in H6a.
-  cbn in Ht.
-
-assert (a o fmap G (fmap F (fmap G (trans (counit A1) A))) =
-        fmap G (trans (counit A1) A) o trans (mu M) (fobj G A) ).
-cbn.
-
-(* assert (a o fmap G (fmap F (fmap G (trans (counit A1) A))) o 
-        (trans (eta M) (fobj G (fobj F (fobj G A)))) =
-        (fmap G (trans (counit A1) A) o trans (mu M) (fobj G A) o 
-        (trans (eta M) (fobj G (fobj F (fobj G A)))) )).
-cbn. *)
-assert (fmap G (trans (counit A1) (fobj F (fobj G A))) o 
-trans (unit A1) (fobj G (fobj F (fobj G A))) =
-identity (fobj G (fobj F (fobj G A))) /\
-fmap G (trans (counit A1) (fobj F (fobj G A))) o 
-fmap G (fmap F (fmap G (trans (counit A1) (fobj F (fobj G A))))) =
-fmap G (trans (counit A1) (fobj F (fobj G A))) o 
-fmap G (trans (counit A1) (fobj F (fobj G (fobj F (fobj G A)))))) by admit.
-destruct H as (H0, H1).
-
-assert (TA: TAlgebra M (fobj G (fobj F (fobj G A)))).
-{ exists (trans (mu M) (fobj G A)).
-  cbn.
-  admit.
-}
-destruct TA as (_a, (HA1, HA2)).
-cbn in _a, HA1, HA2.
-
-assert (trans (mu M) (fobj G a) o trans (eta M) (fobj G (fobj F (fobj G a))) = 
-        identity ((fobj G (fobj F (fobj G a))))).
-specialize (@comm_diagram2_b2 _ _  M (fobj G a)); intro H.
-cbn in H.
-cbn. easy.
-cbn in H.
-assert (TA: TAlgebra M (fobj G (fobj F (fobj G a)))).
-{ exists (trans (mu M) (fobj G a)).
-  admit.
-}
-destruct TA as (_a, (HA1, HA2)).
-cbn in _a, HA1, HA2.
-
-assert (fmap G (fmap F (fmap G (trans (counit A1) a))) o trans (eta M) (fobj G (fobj F (fobj G a))) = 
-        identity ((fobj G (fobj F (fobj G a))))).
-specialize (@comm_diagram2_b2 _ _  M (fobj G a)); intro HH.
-cbn in HH.
-cbn.
-specialize(@ob2 _ _ _ _ A1  (fobj F (fobj G a))); intro HHH.
-cbn.
-specialize (@comm_diagram2_b1 _ _  M (fobj G a)); intro HHHH.
-cbn.
-cbn in HHHH.
-assert ( (x o fmap G (fmap F x)) o trans (unit A1) (fobj G (fobj F (fobj G a))) =
-         (x o fmap G (trans (counit A1) (fobj F (fobj G a)))) o 
-          trans (unit A1) (fobj G (fobj F (fobj G a)))).
-now rewrite q.
-do 2 rewrite <- assoc in H0.
-cbn in H, H0.
-unfold id in H, H0.
-symmetry in H0.
-assert (x =  x o (fmap G (fmap F x) o trans (unit A1) (fobj G (fobj F (fobj G a))))) 
-by admit.
-rewrite assoc in H1.
-
-Admitted. *)
-
-
+(*----------------------------------------------------------------------------------------------------*)
 
