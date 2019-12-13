@@ -41,8 +41,16 @@ Class Functor (C D: Category): Type :=
 Arguments fmap {_} {_} _ _ _ _.
 Arguments fobj {_} {_} _ _.
 
+(** F_split with JMeq *)
+Lemma F_split: ∏ (C D  : Category) (F G  : Functor C D), fobj F = fobj G -> JMeq (fmap F) (fmap G) -> F = G.
+Proof.
+    destruct F; destruct G; cbn; intros; subst; apply JMeq_eq in H0; subst; f_equal.
+    now destruct (proof_irrelevance _ preserve_id0 preserve_id1).
+    now destruct (proof_irrelevance _ preserve_comp0 preserve_comp1).
+Defined.
+
 (** sameness of Functors, inspired by Amin Timany *)
-Lemma F_split: ∏
+Lemma F_split2: ∏
                (C D  : Category)
                (F G  : Functor C D)
                (ObjEq: (fobj F) = (fobj G)),
@@ -56,13 +64,6 @@ Proof.
     now destruct (proof_irrelevance _ preserve_comp0 preserve_comp1).
 Defined.
 
-(** F_split with JMeq *)
-Lemma F_split2: ∏ (C D  : Category) (F G  : Functor C D), fobj F = fobj G -> JMeq (fmap F) (fmap G) -> F = G.
-Proof.
-    destruct F; destruct G; cbn; intros; subst; apply JMeq_eq in H0; subst; f_equal.
-    now destruct (proof_irrelevance _ preserve_id0 preserve_id1).
-    now destruct (proof_irrelevance _ preserve_comp0 preserve_comp1).
-Defined.
 
 Definition IdF (C: Category): @Functor C C.
 Proof. refine (@mk_Functor C C id (fun a b f => f) _ _);
@@ -91,7 +92,7 @@ Proof. intros.
        assert (fobj (Compose_Functors H (Compose_Functors G F)) = 
                fobj (Compose_Functors (Compose_Functors H G) F)).
        { cbn. easy. }
-       specialize (F_split2 _ _ _ _ H0); intros.
+       specialize (F_split _ _ _ _ H0); intros.
        apply H1. cbn. easy.
 Defined.
 
@@ -101,13 +102,7 @@ Proof. intros.
        assert (fobj (Compose_Functors F (IdF D)) = fobj F).
        { cbn. easy. }
        specialize (F_split _ _ _ _ H); intros.
-       apply H0. cbn.
-       extensionality a. extensionality b.
-       clear H0. cbn in H. unfold id in *.
-       assert (H = eq_refl).
-       { specialize (UIP_refl _   (fun a : @obj C => fobj F a)); intros.
-         now specialize (H0 H).
-       } now subst.
+       apply H0. cbn. easy.
 Defined.
 
 
@@ -117,13 +112,7 @@ Proof. intros.
        assert (fobj (Compose_Functors (IdF C) F) = fobj F).
        { cbn. easy. }
        specialize (F_split _ _ _ _ H); intros.
-       apply H0. cbn.
-       extensionality a. extensionality b.
-       clear H0. cbn in H. unfold id in *.
-       assert (H = eq_refl).
-       { specialize (UIP_refl _   (fun a : @obj C => fobj F a)); intros.
-         now specialize (H0 H).
-       } now subst.
+       apply H0. cbn. easy.
 Defined.
 
 Arguments Compose_Functors {_} {_} {_} _ _.
@@ -610,17 +599,56 @@ Proof. intros.
 Defined.
 Check KT.
 
+
+Inductive eq_dep {U: Type} {P: U -> Type} (p: U) (x: P p): ∏ (q: U), P q -> Prop :=
+  | eq_dep_intro : eq_dep p x p x.
+  Hint Constructors eq_dep: core.
+
+Lemma eq_sigT_eq_dep: ∏ (U:Type) (P:U -> Type) (p q:U) (x:P p) (y:P q),
+    existT P p x = existT P q y -> eq_dep p x q y.
+Proof.
+  intros.
+  dependent rewrite H.
+  apply eq_dep_intro.
+Qed.
+
+Lemma eq_dep_eq_sigT: ∏ (U:Type) (P:U -> Type) (p q:U) (x:P p) (y:P q),
+    eq_dep p x q y -> existT P p x = existT P q y.
+Proof.
+  destruct 1; reflexivity.
+Qed.
+
+Lemma eq_sigT_iff_eq_dep: ∏ (U:Type) (P:U -> Type) (p q:U) (x:P p) (y:P q),
+    existT P p x = existT P q y <-> eq_dep p x q y.
+Proof.
+  split; auto using eq_sigT_eq_dep, eq_dep_eq_sigT.
+Qed.
+
+Lemma eq_dep_id_JMeq: ∏ (A: Type) (B:Type) (x:A) (y:B), 
+   @eq_dep Type (fun X:Type => X) A x B y -> JMeq x y.
+Proof. intros A B x y p. 
+       now destruct p.
+Qed.
+
+Definition eq_existT_uncurried {A : Type} {P : A -> Type} {u1 v1 : A} {u2 : P u1} {v2 : P v1}
+           (pq : { p : u1 = v1 & eq_rect _ P u2 _  p = v2 }): existT _ u1 u2 = existT _ v1 v2.
+Proof.
+  destruct pq as [p q].
+  destruct q; simpl in *.
+  destruct p; reflexivity.
+Defined.
+
 Lemma commKT: ∏ {C D: Category} (F: Functor C D) (G: Functor D C) (A: Adjunction F G),
                let M   := (adj_mon F G A) in
                let EMC := (EilenbergMooreCategory M) in
                  (Compose_Functors (KT F G A) (GT M)) = G /\ (Compose_Functors F (KT F G A)) = (FT M).
 Proof. intros C D F G A M EMC; split. 
-       - apply F_split2.
+       - apply F_split.
          + easy.
-         + apply eq_dep_id_JMeq, EqdepFacts.eq_sigT_iff_eq_dep, eq_existT_uncurried.
+         + apply eq_dep_id_JMeq, eq_sigT_iff_eq_dep, eq_existT_uncurried.
            cbn. unfold eq_rect.
            exists eq_refl. easy.
-       - apply F_split2.
+       - apply F_split.
          + cbn. unfold id in *.
            extensionality a.
            apply f_equal.
@@ -632,7 +660,7 @@ Proof. intros C D F G A M EMC; split.
            apply eqTA; easy.
 
            apply eq_dep_id_JMeq.
-           apply EqdepFacts.eq_sigT_iff_eq_dep.
+           apply eq_sigT_iff_eq_dep.
            apply eq_existT_uncurried.
 
            assert ((∏ a b : obj,
