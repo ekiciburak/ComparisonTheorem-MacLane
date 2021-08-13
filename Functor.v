@@ -21,7 +21,7 @@ Arguments fobj {_} {_} _ _.
 Lemma F_split: forall (C D: Category) (F G: Functor C D),
                  fobj F = fobj G -> JMeq (fmap F) (fmap G) -> F = G.
 Proof.
-    destruct F; destruct G; cbn; intros; subst; apply JMeq_eq in H0; subst; f_equal.
+    destruct F; destruct G; cbn; intros; subst; f_equal.
     now destruct (proof_irrelevance _ fmapP0 fmapP1).
     now destruct (proof_irrelevance _ preserve_id0 preserve_id1).
     now destruct (proof_irrelevance _ preserve_comp0 preserve_comp1).

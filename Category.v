@@ -24,7 +24,7 @@ Lemma C_split: forall C D: Category,
                JMeq (@comp C) (@comp D) -> C = D.
 Proof. intros C D H0 H1 H2 H3.
        destruct C, D. cbn in *. subst.
-       apply JMeq_eq in H1. subst. apply JMeq_eq in H2. subst. f_equal.
+       f_equal.
        now destruct (proof_irrelevance _ compose_respects0 compose_respects1).
        now destruct (proof_irrelevance _ assoc0 assoc1).
        now destruct (proof_irrelevance _ identity_f0 identity_f1).

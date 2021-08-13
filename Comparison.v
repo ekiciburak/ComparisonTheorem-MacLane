@@ -134,7 +134,7 @@ Proof. intros C D F G A1 M CK FT GT A2 R H.
          }
          rewrite H1.
          extensionality a. extensionality b. extensionality f.
-         apply (adj_unique_map _ _ _ _ A1) with (f := f). 
+         apply (adj_unique_map _ _ _ _ A1) with (f := f).
 
          rewrite !Functor.preserve_comp, <- !assoc.
          destruct A1, unit. cbn in *. unfold id in *.
